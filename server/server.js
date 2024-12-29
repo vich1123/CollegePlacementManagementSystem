@@ -1,6 +1,7 @@
 require('dotenv').config(); // Ensure environment variables are loaded
 const express = require('express');
 const cors = require('cors');
+const path = require('path'); // Required for serving static files
 const logger = require('./middleware/logger');
 const connectDB = require('./config/db'); // Ensure db.js path is correct
 const studentRoutes = require('./routes/students');
@@ -24,8 +25,12 @@ app.use('/api/companies', companyRoutes);
 app.use('/api/placements', placementRoutes);
 app.use('/api/recruitment-status', recruitmentRoutes);
 
-app.get('/', (req, res) => {
-  res.send('Server is running');
+// Serve React frontend
+const buildPath = path.join(__dirname, 'build');
+app.use(express.static(buildPath));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
 });
 
 // Global error handler
