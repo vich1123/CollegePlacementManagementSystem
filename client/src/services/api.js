@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Axios instance with deployed backend URL
 const API = axios.create({
-  baseURL: 'https://your-backend-url.onrender.com/api', // Replace with your deployed backend URL
+  baseURL: 'https://collegeplacementmanagementsystem-1.onrender.com/api', // Replace with your deployed backend URL
 });
 
 export default API;
