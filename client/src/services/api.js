@@ -1,8 +1,11 @@
 import axios from 'axios';
 
+// Axios instance
 const API = axios.create({
-  baseURL: 'http://localhost:5001/api',
+  baseURL: 'http://localhost:5001/api', // Backend base URL
 });
+
+export default API; // Correctly exporting the API instance
 
 // Students API
 export const addStudent = async (studentData) => {

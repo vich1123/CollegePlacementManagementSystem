@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const logger = require('./middleware/logger');
 
 dotenv.config(); // Load environment variables
@@ -11,12 +10,14 @@ dotenv.config(); // Load environment variables
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Connect to the database
 connectDB();
 
 // Middleware
-app.use(cors());
-app.use(logger);
-app.use(bodyParser.json()); // Parses JSON request bodies
+app.use(cors()); // Enable CORS
+app.use(express.json()); // Middleware to parse JSON bodies
+app.use(express.urlencoded({ extended: true })); // Middleware for URL-encoded payloads
+app.use(logger); // Custom logger middleware
 
 // Import routes
 const studentRoutes = require('./routes/students');

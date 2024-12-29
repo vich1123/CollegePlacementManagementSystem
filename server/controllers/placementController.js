@@ -12,14 +12,15 @@ const getPlacements = async (req, res) => {
 
 // Add a new placement
 const createPlacement = async (req, res) => {
-  const { companyId, position, date } = req.body;
+  const { title, companyId, position, date } = req.body;
 
-  if (!companyId || !position || !date) {
+  // Validate required fields
+  if (!title || !companyId || !position || !date) {
     return res.status(400).json({ message: "All fields are required!" });
   }
 
   try {
-    const newPlacement = new Placement({ companyId, position, date });
+    const newPlacement = new Placement({ title, companyId, position, date });
     await newPlacement.save();
     res.status(201).json({ message: "Placement added successfully!", placement: newPlacement });
   } catch (error) {
