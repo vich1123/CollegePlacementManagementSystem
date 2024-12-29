@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-// Axios instance
+// Axios instance with deployed backend URL
 const API = axios.create({
-  baseURL: 'http://localhost:5001/api', // Backend base URL
+  baseURL: 'https://your-backend-url.onrender.com/api', // Replace with your deployed backend URL
 });
 
-export default API; // Correctly exporting the API instance
+export default API;
 
 // Students API
 export const addStudent = async (studentData) => {

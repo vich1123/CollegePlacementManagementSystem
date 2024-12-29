@@ -4,6 +4,7 @@ const connectDB = require('./config/db');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const logger = require('./middleware/logger');
+const path = require('path'); // Import path module for serving static files
 
 dotenv.config(); // Load environment variables
 
@@ -31,6 +32,14 @@ app.use('/api/placements', placementRoutes);
 
 // Suppress Mongoose strictQuery warning
 mongoose.set('strictQuery', false);
+
+// Serve React frontend (if available)
+const buildPath = path.join(__dirname, 'build');
+app.use(express.static(buildPath));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
+});
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
