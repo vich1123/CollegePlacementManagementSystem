@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const connectDB = require("./db"); // Import the MongoDB connection function
+const connectDB = require("./config/db"); // Corrected path to the db file
 
 // Import Routes
 const studentRoutes = require("./routes/students");
