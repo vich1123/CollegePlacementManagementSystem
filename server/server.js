@@ -5,7 +5,7 @@ const cors = require("cors");
 // Import Routes
 const studentRoutes = require("./routes/students");
 const companyRoutes = require("./routes/companies");
-const placementDriveRoutes = require("./routes/placements");
+const placementsRoutes = require('./routes/placements');
 const recruitmentStatusRoutes = require("./routes/recruitmentStatus");
 
 const app = express();
@@ -17,7 +17,7 @@ app.use(cors());
 // Routes
 app.use("/api/students", studentRoutes);
 app.use("/api/companies", companyRoutes);
-app.use("/api/placement-drives", placementsRoutes);
+app.use('/api/placement-drives', placementsRoutes);
 app.use("/api/recruitment-status", recruitmentStatusRoutes);
 
 // Default Route
