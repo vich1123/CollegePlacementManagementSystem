@@ -36,7 +36,7 @@ const AddStudent = () => {
         throw new Error(errorData.message || "Failed to add student");
       }
 
-      const data = await response.json();
+      //const data = await response.json();
       setMessage("Student added successfully!");
       setStudent({ name: "", email: "", resumeLink: "", course: "" });
     } catch (error) {
