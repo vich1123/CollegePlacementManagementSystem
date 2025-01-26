@@ -1,6 +1,6 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
+const connectDB = require("./db"); // Import the MongoDB connection function
 
 // Import Routes
 const studentRoutes = require("./routes/students");
@@ -25,22 +25,14 @@ app.get("/", (req, res) => {
   res.send("Welcome to the College Placement Management System API");
 });
 
-// Connect to MongoDB
-mongoose.set("strictQuery", true);
-mongoose
-  .connect("mongodb://127.0.0.1:27017/college-placement", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("Connected to MongoDB");
-    app.listen(5001, () => {
-      console.log("Server running on http://localhost:5001");
-    });
-  })
-  .catch((err) => {
-    console.error("Error connecting to MongoDB:", err.message);
+// Connect to MongoDB and Start the Server
+connectDB().then(() => {
+  app.listen(5001, () => {
+    console.log("Server running on http://localhost:5001");
   });
+}).catch((err) => {
+  console.error("Failed to start server due to database connection error:", err.message);
+});
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
