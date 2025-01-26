@@ -1,59 +1,59 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const connectDB = require('./config/db');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const logger = require('./middleware/logger');
-const path = require('path'); // Import path module for serving static files
+const connectDB = require('./config/db');
+const path = require('path');
 
-dotenv.config(); // Load environment variables
+// Load environment variables
+dotenv.config();
 
+// Initialize express app
 const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Connect to the database
 connectDB();
 
-// Middleware
-app.use(cors()); // Enable CORS
-app.use(express.json()); // Middleware to parse JSON bodies
-app.use(express.urlencoded({ extended: true })); // Middleware for URL-encoded payloads
-app.use(logger); // Custom logger middleware
+// Middleware for parsing JSON and URL-encoded data
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Import routes
+// CORS configuration
+const corsOptions = {
+  origin: ['http://localhost:3000', 'https://collegeplacementmanagementsystem.netlify.app'], // Frontend URLs
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true, // Required for cookies, if used
+};
+app.use(cors(corsOptions));
+
+// Import Routes
 const studentRoutes = require('./routes/students');
 const companyRoutes = require('./routes/companies');
 const placementRoutes = require('./routes/placements');
+const recruitmentRoutes = require('./routes/recruitmentStatus');
 
-// Route middlewares
+// API Routes
 app.use('/api/students', studentRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/placements', placementRoutes);
+app.use('/api/recruitment-status', recruitmentRoutes);
 
-// Suppress Mongoose strictQuery warning
-mongoose.set('strictQuery', false);
-
-// Serve React frontend (if available)
+// Serve frontend build files
 const buildPath = path.join(__dirname, 'build');
 app.use(express.static(buildPath));
 
+// Fallback for all other routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(buildPath, 'index.html'));
+  res.sendFile(path.resolve(buildPath, 'index.html'));
 });
 
-//static files
-
-app.use(express.static(path.join(__dirname, 'build')));
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ success: false, message: 'Internal Server Error' });
 });
 
-
-// Database connection and server startup
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch((err) => {
-    console.error('Database connection error:', err);
-  });
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});

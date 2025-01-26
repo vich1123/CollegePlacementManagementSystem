@@ -1,51 +1,49 @@
-require('dotenv').config(); // Ensure environment variables are loaded
-const express = require('express');
-const cors = require('cors');
-const path = require('path'); // Required for serving static files
-const logger = require('./middleware/logger');
-const connectDB = require('./config/db'); // Ensure db.js path is correct
-const studentRoutes = require('./routes/students');
-const companyRoutes = require('./routes/companies');
-const placementRoutes = require('./routes/placements');
-const recruitmentRoutes = require('./routes/recruitmentStatus');
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+
+// Import Routes
+const studentRoutes = require("./routes/students");
+const companyRoutes = require("./routes/companies");
+const placementDriveRoutes = require("./routes/placementDrive");
+const recruitmentStatusRoutes = require("./routes/recruitmentStatus");
 
 const app = express();
-const PORT = process.env.PORT || 5001;
 
-app.use(cors());
+// Middleware
 app.use(express.json());
-app.use(logger);
+app.use(cors());
+
+// Routes
+app.use("/api/students", studentRoutes);
+app.use("/api/companies", companyRoutes);
+app.use("/api/placement-drives", placementDriveRoutes);
+app.use("/api/recruitment-status", recruitmentStatusRoutes);
+
+// Default Route
+app.get("/", (req, res) => {
+  res.send("Welcome to the College Placement Management System API");
+});
 
 // Connect to MongoDB
-connectDB();
+mongoose.set("strictQuery", true);
+mongoose
+  .connect("mongodb://127.0.0.1:27017/college-placement", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log("Connected to MongoDB");
+    app.listen(5001, () => {
+      console.log("Server running on http://localhost:5001");
+    });
+  })
+  .catch((err) => {
+    console.error("Error connecting to MongoDB:", err.message);
+  });
 
-// Mount API routes
-app.use('/api/students', studentRoutes);
-app.use('/api/companies', companyRoutes);
-app.use('/api/placements', placementRoutes);
-app.use('/api/recruitment-status', recruitmentRoutes);
-
-// Serve React frontend
-const buildPath = path.join(__dirname, 'build');
-app.use(express.static(buildPath));
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(buildPath, 'index.html'));
-});
-
-//static files
-
-app.use(express.static(path.join(__dirname, 'build')));
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
-});
-
-// Global error handler
+// Error Handling Middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send({ message: 'Internal Server Error' });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  res.status(500).json({ message: "Something went wrong!" });
 });

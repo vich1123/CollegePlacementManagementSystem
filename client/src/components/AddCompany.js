@@ -1,22 +1,30 @@
-import React, { useState } from 'react';
-import { addCompany } from '../services/api';
+import React, { useState } from "react";
+import axios from "axios";
 
 function AddCompany() {
-  const [company, setCompany] = useState({ name: '', jobPostings: '' });
-  const [message, setMessage] = useState('');
+  const [formData, setFormData] = useState({ name: "", jobPostings: "" });
+  const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
-    setCompany({ ...company, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await addCompany({ ...company, jobPostings: company.jobPostings.split(',') });
-      setMessage('Company added successfully!');
-      setCompany({ name: '', jobPostings: '' });
+      const jobPostings = formData.jobPostings.split(",").map((job) => job.trim());
+      if (!formData.name || jobPostings.length === 0 || !jobPostings[0]) {
+        throw new Error("All fields are required.");
+      }
+      const response = await axios.post("http://localhost:5001/api/companies", {
+        ...formData,
+        jobPostings,
+      });
+      setMessage(response.data.message || "Company added successfully!");
+      setFormData({ name: "", jobPostings: "" });
     } catch (error) {
-      setMessage('Failed to add company. Please try again.');
+      console.error("Error adding company:", error.response?.data || error.message);
+      setMessage(error.response?.data?.message || "Error adding company.");
     }
   };
 
@@ -24,31 +32,25 @@ function AddCompany() {
     <div className="container">
       <h2 className="heading">Add Company</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="name">Company Name</label>
-          <input
-            id="name"
-            name="name"
-            value={company.name}
-            onChange={handleChange}
-            placeholder="Enter company name"
-            className="input-field"
-          />
-        </div>
-        <div>
-          <label htmlFor="jobPostings">Job Postings</label>
-          <input
-            id="jobPostings"
-            name="jobPostings"
-            value={company.jobPostings}
-            onChange={handleChange}
-            placeholder="Job Postings (comma-separated)"
-            className="input-field"
-          />
-        </div>
-        <button type="submit" className="button">Add Company</button>
+        <input
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          placeholder="Company Name"
+          className="input-field"
+        />
+        <input
+          name="jobPostings"
+          value={formData.jobPostings}
+          onChange={handleChange}
+          placeholder="Job Postings (comma-separated)"
+          className="input-field"
+        />
+        <button type="submit" className="button">
+          Add Company
+        </button>
+        {message && <p className="text-center text-red-500">{message}</p>}
       </form>
-      {message && <p className={`feedback-message ${message.includes('Failed') ? 'text-red-500' : 'text-green-500'} text-center`}>{message}</p>}
     </div>
   );
 }

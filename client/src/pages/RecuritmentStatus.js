@@ -1,40 +1,58 @@
 import React, { useState, useEffect } from "react";
+import { fetchRecruitmentStatus } from "../services/api"; // Use centralized API utility
 
 function RecruitmentStatus() {
   const [data, setData] = useState([]); // Initialize as an empty array
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const loadRecruitmentStatus = async () => {
       try {
-        const response = await fetch("http://localhost:5001/api/recruitment-status");
-        if (!response.ok) throw new Error("Failed to fetch data");
-        const result = await response.json();
+        const result = await fetchRecruitmentStatus(); // Fetch data from API service
         setData(result);
+        setError(null); // Clear any previous errors
       } catch (err) {
-        console.error(err);
-        setError(err.message);
+        console.error("Error fetching recruitment status:", err);
+        setError(err.message || "Failed to fetch recruitment status.");
+      } finally {
+        setLoading(false); // Stop loading after data fetch
       }
     };
 
-    fetchData();
+    loadRecruitmentStatus();
   }, []);
 
+  if (loading) {
+    return <p>Loading...</p>; // Show loading state
+  }
+
   if (error) {
-    return <p>Error: {error}</p>;
+    return <p className="text-red-500">Error: {error}</p>; // Display error message
   }
 
   return (
-    <div>
-      <h2>Recruitment Status</h2>
+    <div className="bg-gray-100 min-h-screen p-6">
+      <h2 className="text-2xl font-bold mb-6">Recruitment Status</h2>
+
       {data && data.length > 0 ? (
-        data.map((item) => (
-          <div key={item.id}>
-            <h3>{item.name}</h3>
-          </div>
-        ))
+        <div className="space-y-4">
+          {data.map((item) => (
+            <div key={item._id} className="p-4 bg-white rounded-lg shadow-md">
+              <p>
+                <strong>Student:</strong> {item.studentName || "N/A"}
+              </p>
+              <p>
+                <strong>Company:</strong> {item.companyName || "N/A"}
+              </p>
+              <p>
+                <strong>Status:</strong> {item.status || "N/A"}
+              </p>
+            </div>
+          ))}
+        </div>
       ) : (
-        <p>No recruitment data available</p>
+        <p className="text-gray-700">No recruitment data available.</p>
       )}
     </div>
   );

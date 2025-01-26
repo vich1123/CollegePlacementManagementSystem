@@ -1,7 +1,13 @@
-const express = require('express');
-const { getRecruitmentStatus } = require('../controllers/recruitmentStatusController');
+const express = require("express");
+const {
+  getRecruitmentStatus,
+  createRecruitmentStatus,
+} = require("../controllers/recruitmentStatusController");
+
 const router = express.Router();
 
-router.get('/', getRecruitmentStatus);
+// Define Routes
+router.get("/", getRecruitmentStatus);
+router.post("/", createRecruitmentStatus);
 
 module.exports = router;

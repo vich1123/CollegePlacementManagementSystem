@@ -1,21 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
+import { fetchCompanies } from "../services/api";
 
 function CompanyList() {
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCompanies = async () => {
+      try {
+        const data = await fetchCompanies();
+        setCompanies(data);
+      } catch (error) {
+        console.error("Error fetching companies:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCompanies();
+  }, []);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
   return (
-    <div className="p-6 bg-gray-100 rounded-lg shadow-md">
-      <h3 className="text-lg font-semibold text-gray-700 mb-4">Company Listings</h3>
-      <ul className="space-y-2">
-        {/* Replace this with dynamic data */}
-        <li className="bg-white px-4 py-2 rounded-md shadow-sm border border-gray-300">
-          Example Company - Job Roles: Developer, Tester
-        </li>
-        <li className="bg-white px-4 py-2 rounded-md shadow-sm border border-gray-300">
-          Another Company - Job Roles: Designer, Manager
-        </li>
+    <div className="p-4 bg-white rounded shadow">
+      <h2 className="text-lg font-bold mb-4">Company List</h2>
+      <ul className="list-disc pl-6">
+        {companies.map((company) => (
+          <li key={company.id}>{company.name}</li>
+        ))}
       </ul>
     </div>
   );
 }
 
 export default CompanyList;
- 

@@ -1,45 +1,47 @@
 import React, { useState } from "react";
 import AddStudent from "../components/AddStudent";
+import { addCompany } from "../services/api"; // Use centralized API utility
 
 function AdminDashboard() {
   const [companyName, setCompanyName] = useState("");
   const [jobPostings, setJobPostings] = useState("");
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const handleAddCompany = async (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch("http://localhost:5001/api/companies", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          companyName,
-          jobPostings,
-        }),
-      });
+    setMessage("");
+    setError("");
 
-      const data = await response.json();
-      if (response.ok) {
-        setMessage(data.message);
-        setCompanyName("");
-        setJobPostings("");
-      } else {
-        setMessage(`Error: ${data.message}`);
+    try {
+      if (!companyName || !jobPostings) {
+        setError("Both fields are required.");
+        return;
       }
+
+      const jobPostingArray = jobPostings.split(",").map((job) => job.trim());
+      const response = await addCompany({ companyName, jobPostings: jobPostingArray });
+
+      setMessage("Company added successfully!");
+      setCompanyName("");
+      setJobPostings("");
     } catch (error) {
-      setMessage(`Error: ${error.message}`);
+      setError(error.message || "Error adding company.");
     }
   };
 
   return (
     <div className="bg-gray-100 min-h-screen p-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Add Student Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-bold mb-4 text-purple-600">Add Student</h2>
           <AddStudent />
         </div>
+
+        {/* Add Company Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-4 text-purple-600">Admin Dashboard</h2>
+          <h2 className="text-xl font-bold mb-4 text-purple-600">Add Company</h2>
           <form className="flex flex-col gap-4" onSubmit={handleAddCompany}>
             <div>
               <label className="block text-gray-700 mb-2">Company Name</label>
@@ -69,7 +71,8 @@ function AdminDashboard() {
             >
               Add Company
             </button>
-            {message && <p className="mt-4 text-center text-sm">{message}</p>}
+            {message && <p className="mt-4 text-green-500 text-center">{message}</p>}
+            {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
           </form>
         </div>
       </div>

@@ -1,60 +1,67 @@
-import React, { useState, useEffect } from "react";
-import { fetchInterviews, scheduleInterview } from "../services/api";
+import React, { useState } from "react";
+import { scheduleInterview } from "../services/api";
 
 function InterviewScheduler() {
-  const [interviews, setInterviews] = useState([]);
-  const [newInterview, setNewInterview] = useState({ studentName: "", companyName: "", date: "" });
+  const [formData, setFormData] = useState({
+    student: "",
+    company: "",
+    date: "",
+    time: "",
+  });
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    const getInterviews = async () => {
-      try {
-        const response = await fetchInterviews();
-        setInterviews(response.data);
-      } catch (error) {
-        console.error("Error fetching interviews:", error);
-      }
-    };
-    getInterviews();
-  }, []);
-
   const handleChange = (e) => {
-    setNewInterview({ ...newInterview, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await scheduleInterview(newInterview);
+      await scheduleInterview(formData);
       setMessage("Interview scheduled successfully!");
-      setNewInterview({ studentName: "", companyName: "", date: "" });
-      const response = await fetchInterviews();
-      setInterviews(response.data);
+      setFormData({ student: "", company: "", date: "", time: "" });
     } catch (error) {
-      console.error("Error scheduling interview:", error);
-      setMessage("Failed to schedule interview.");
+      setMessage("Error scheduling interview. Please try again.");
     }
   };
 
   return (
-    <div>
-      <h2>Interview Scheduler</h2>
-      <form onSubmit={handleSubmit}>
-        <input name="studentName" value={newInterview.studentName} onChange={handleChange} placeholder="Student Name" />
-        <input name="companyName" value={newInterview.companyName} onChange={handleChange} placeholder="Company Name" />
-        <input type="date" name="date" value={newInterview.date} onChange={handleChange} />
-        <button type="submit">Schedule Interview</button>
+    <div className="p-4 bg-white rounded shadow">
+      <h2 className="text-lg font-bold mb-4">Schedule Interview</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          name="student"
+          value={formData.student}
+          onChange={handleChange}
+          placeholder="Student ID"
+          className="input"
+        />
+        <input
+          name="company"
+          value={formData.company}
+          onChange={handleChange}
+          placeholder="Company ID"
+          className="input"
+        />
+        <input
+          name="date"
+          type="date"
+          value={formData.date}
+          onChange={handleChange}
+          className="input"
+        />
+        <input
+          name="time"
+          type="time"
+          value={formData.time}
+          onChange={handleChange}
+          className="input"
+        />
+        <button type="submit" className="btn">
+          Schedule Interview
+        </button>
+        {message && <p className="text-red-500">{message}</p>}
       </form>
-      {message && <p>{message}</p>}
-      <ul>
-        {interviews.map((interview) => (
-          <li key={interview._id}>
-            <p><strong>Student:</strong> {interview.studentName}</p>
-            <p><strong>Company:</strong> {interview.companyName}</p>
-            <p><strong>Date:</strong> {new Date(interview.date).toLocaleDateString()}</p>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

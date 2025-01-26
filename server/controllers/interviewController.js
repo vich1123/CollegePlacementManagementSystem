@@ -11,7 +11,7 @@ const scheduleInterview = async (req, res) => {
   try {
     const interview = new Interview({ student, company, date, mode });
     await interview.save();
-    res.status(201).json({ message: 'Interview scheduled successfully!', interview });
+    res.status(201).json({ message: 'Interview scheduled successfully!', data: interview });
   } catch (error) {
     res.status(500).json({ message: 'Error scheduling interview', error: error.message });
   }
@@ -21,7 +21,7 @@ const scheduleInterview = async (req, res) => {
 const getInterviews = async (req, res) => {
   try {
     const interviews = await Interview.find().populate('student company');
-    res.status(200).json(interviews);
+    res.status(200).json({ success: true, data: interviews });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching interviews', error: error.message });
   }

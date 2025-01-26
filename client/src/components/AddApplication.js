@@ -1,29 +1,30 @@
 import React, { useState } from "react";
+import { addApplication } from "../services/api";
 
 function AddApplication() {
-  const [student, setStudent] = useState("");
-  const [company, setCompany] = useState("");
-  const [status, setStatus] = useState("submitted");
+  const [formData, setFormData] = useState({
+    student: "",
+    company: "",
+    status: "submitted",
+  });
   const [message, setMessage] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.student || !formData.company) {
+      setMessage("Please fill in all fields.");
+      return;
+    }
     try {
-      const response = await fetch("http://localhost:5001/api/applications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ student, company, status }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setMessage("Application added successfully!");
-        setStudent("");
-        setCompany("");
-      } else {
-        setMessage(`Error: ${data.message}`);
-      }
+      await addApplication(formData);
+      setMessage("Application added successfully!");
+      setFormData({ student: "", company: "", status: "submitted" });
     } catch (error) {
-      setMessage(`Error: ${error.message}`);
+      setMessage("Error adding application. Please try again.");
     }
   };
 
@@ -32,20 +33,25 @@ function AddApplication() {
       <h2 className="text-lg font-bold mb-4">Add Application</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
-          type="text"
-          value={student}
-          onChange={(e) => setStudent(e.target.value)}
+          name="student"
+          value={formData.student}
+          onChange={handleChange}
           placeholder="Student ID"
           className="input"
         />
         <input
-          type="text"
-          value={company}
-          onChange={(e) => setCompany(e.target.value)}
+          name="company"
+          value={formData.company}
+          onChange={handleChange}
           placeholder="Company ID"
           className="input"
         />
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="input">
+        <select
+          name="status"
+          value={formData.status}
+          onChange={handleChange}
+          className="input"
+        >
           <option value="submitted">Submitted</option>
           <option value="reviewed">Reviewed</option>
           <option value="shortlisted">Shortlisted</option>

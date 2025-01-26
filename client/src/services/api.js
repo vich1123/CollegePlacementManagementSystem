@@ -1,62 +1,58 @@
-import axios from 'axios';
+import axios from "axios";
 
-// Axios instance with deployed backend URL
-const API = axios.create({
-  baseURL: 'https://collegeplacementmanagementsystem-1.onrender.com/api', // Replace with your deployed backend URL
-});
+const BASE_URL = "http://localhost:5001/api";
 
-export default API;
-
-// Students API
-export const addStudent = async (studentData) => {
+// Fetch all companies
+export const getCompanies = async () => {
   try {
-    const response = await API.post('/students', studentData);
+    const response = await axios.get(`${BASE_URL}/companies`);
     return response.data;
   } catch (error) {
-    console.error('Error adding student:', error.message);
+    console.error("Error fetching companies:", error);
     throw error;
   }
 };
 
-// Companies API
-export const addCompany = async (companyData) => {
+// Create a new company
+export const createCompany = async (data) => {
   try {
-    const response = await API.post('/companies', companyData);
+    const response = await axios.post(`${BASE_URL}/companies`, data);
     return response.data;
   } catch (error) {
-    console.error('Error adding company:', error.message);
+    console.error("Error creating company:", error);
     throw error;
   }
 };
 
-// Placement Drives API
-export const fetchPlacementDrives = async () => {
+// Create a new student
+export const createStudent = async (data) => {
   try {
-    const response = await API.get('/placements');
+    const response = await axios.post(`${BASE_URL}/students`, data);
     return response.data;
   } catch (error) {
-    console.error('Error fetching placement drives:', error.message);
+    console.error("Error creating student:", error);
     throw error;
   }
 };
 
-export const addPlacementDrive = async (placementData) => {
+// Create a new placement drive
+export const createPlacementDrive = async (data) => {
   try {
-    const response = await API.post('/placements', placementData);
+    const response = await axios.post(`${BASE_URL}/placements`, data);
     return response.data;
   } catch (error) {
-    console.error('Error adding placement drive:', error.message);
+    console.error("Error creating placement drive:", error);
     throw error;
   }
 };
 
-// Recruitment Status API
+// Fetch recruitment status
 export const fetchRecruitmentStatus = async () => {
   try {
-    const response = await API.get('/recruitment-status');
+    const response = await axios.get(`${BASE_URL}/recruitment-status`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching recruitment status:', error.message);
+    console.error("Error fetching recruitment status:", error);
     throw error;
   }
 };

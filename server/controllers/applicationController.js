@@ -1,10 +1,13 @@
-const Application = require("../models/Application");
+const Application = require("../models/application");
 
 // Fetch all applications
 const getApplications = async (req, res) => {
   try {
     const applications = await Application.find().populate("student company");
-    res.status(200).json(applications);
+    if (!applications || applications.length === 0) {
+      return res.status(404).json({ message: "No applications found." });
+    }
+    res.status(200).json({ success: true, data: applications });
   } catch (error) {
     res.status(500).json({ message: "Error fetching applications", error: error.message });
   }
@@ -25,10 +28,13 @@ const updateApplicationStatus = async (req, res) => {
       { status },
       { new: true }
     );
-    res.status(200).json({ message: "Application status updated!", application: updatedApplication });
+    if (!updatedApplication) {
+      return res.status(404).json({ message: "Application not found." });
+    }
+    res.status(200).json({ message: "Application status updated!", data: updatedApplication });
   } catch (error) {
     res.status(500).json({ message: "Error updating application", error: error.message });
   }
 };
 
-module.exports = { createApplication, getApplications, updateApplicationStatus };
+module.exports = { getApplications, updateApplicationStatus };

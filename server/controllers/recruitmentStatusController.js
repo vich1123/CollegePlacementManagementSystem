@@ -1,17 +1,39 @@
-const Student = require('../models/Student');
-const Placement = require('../models/Placement');
-const Company = require('../models/Company');
+const RecruitmentStatus = require("../models/RecruitmentStatus");
 
-const getRecruitmentStatus = async (req, res) => {
+// Get Recruitment Status
+exports.getRecruitmentStatus = async (req, res) => {
   try {
-    const studentsPlaced = await Student.countDocuments({ placed: true });
-    const offersMade = await Placement.countDocuments();
-    const companiesParticipated = await Company.countDocuments();
-
-    res.status(200).json({ studentsPlaced, offersMade, companiesParticipated });
+    const status = await RecruitmentStatus.findOne();
+    if (!status) {
+      return res.status(404).json({ message: "Recruitment status not found" });
+    }
+    res.status(200).json({ data: status });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching recruitment status' });
+    res.status(500).json({
+      message: "Error fetching recruitment status",
+      error: error.message,
+    });
   }
 };
 
-module.exports = { getRecruitmentStatus };
+// Create Recruitment Status
+exports.createRecruitmentStatus = async (req, res) => {
+  try {
+    const { studentsPlaced, offersMade, companiesParticipated } = req.body;
+    const newStatus = new RecruitmentStatus({
+      studentsPlaced,
+      offersMade,
+      companiesParticipated,
+    });
+    await newStatus.save();
+    res.status(201).json({
+      message: "Recruitment status created successfully!",
+      data: newStatus,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error creating recruitment status",
+      error: error.message,
+    });
+  }
+};

@@ -1,8 +1,11 @@
-const express = require('express');
-const { scheduleInterview, getInterviews } = require('../controllers/interviewController');
+const express = require("express");
+const { scheduleInterview, getInterviews } = require("../controllers/interviewController");
 const router = express.Router();
 
-router.post('/', scheduleInterview);
-router.get('/', getInterviews);
+// Schedule a new interview
+router.post("/", scheduleInterview);
+
+// Get all interviews
+router.get("/", getInterviews);
 
 module.exports = router;
