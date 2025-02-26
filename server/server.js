@@ -1,23 +1,30 @@
 const express = require("express");
 const cors = require("cors");
-const connectDB = require("./config/db"); // Corrected path to the db file
+const connectDB = require("./config/db"); 
+require("dotenv").config();
 
 // Import Routes
 const studentRoutes = require("./routes/students");
 const companyRoutes = require("./routes/companies");
-const placementsRoutes = require('./routes/placements');
+const placementsRoutes = require("./routes/placements");
 const recruitmentStatusRoutes = require("./routes/recruitmentStatus");
 
 const app = express();
+const PORT = process.env.PORT || 5001;
 
-// Middleware
+// Proper CORS settings
+app.use(cors({ 
+  origin: "*",  // Allow all origins for development
+  methods: "GET,POST,DELETE,PUT",
+  allowedHeaders: "Content-Type,Authorization"
+}));
+
 app.use(express.json());
-app.use(cors());
 
 // Routes
 app.use("/api/students", studentRoutes);
 app.use("/api/companies", companyRoutes);
-app.use('/api/placement-drives', placementsRoutes);
+app.use("/api/placements", placementsRoutes); 
 app.use("/api/recruitment-status", recruitmentStatusRoutes);
 
 // Default Route
@@ -27,8 +34,8 @@ app.get("/", (req, res) => {
 
 // Connect to MongoDB and Start the Server
 connectDB().then(() => {
-  app.listen(5001, () => {
-    console.log("Server running on http://localhost:5001");
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
   });
 }).catch((err) => {
   console.error("Failed to start server due to database connection error:", err.message);

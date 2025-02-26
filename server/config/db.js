@@ -1,15 +1,23 @@
 const mongoose = require("mongoose");
+require("dotenv").config(); // Load environment variables
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
+    const mongoURI = process.env.MONGO_URI;
+
+    if (!mongoURI) {
+      throw new Error("MongoDB URI is missing! Check your .env file.");
+    }
+
+    await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1); // Exit process if connection fails
+
+    console.log("MongoDB connected successfully.");
+  } catch (err) {
+    console.error("MongoDB connection error:", err.message);
+    process.exit(1); // Exit process with failure
   }
 };
 
