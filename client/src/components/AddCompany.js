@@ -16,7 +16,7 @@ function AddCompany() {
       if (!formData.name || jobPostings.length === 0 || !jobPostings[0]) {
         throw new Error("All fields are required.");
       }
-      const response = await axios.post("http://localhost:5001/api/companies", {
+      const response = await axios.post("https://collegeplacementmanagementsystem-1.onrender.com/api/companies", {
         ...formData,
         jobPostings,
       });

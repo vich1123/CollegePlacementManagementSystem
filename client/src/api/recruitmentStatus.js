@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5001/api/recruitment-status";
+const API_URL = "https://collegeplacementmanagementsystem-1.onrender.com/api/recruitment-status";
 
 export const fetchRecruitmentStatus = async () => {
   const response = await axios.get(API_URL);

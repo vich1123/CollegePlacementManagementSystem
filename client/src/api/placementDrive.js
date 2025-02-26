@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5001/api/placements";
+const BASE_URL = "https://collegeplacementmanagementsystem-1.onrender.com/api/placements";
 
 // Function to create a new placement drive
 export const createPlacementDrive = async (data) => {

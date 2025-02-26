@@ -22,7 +22,7 @@ const AddStudent = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5001/api/students", {
+      const response = await fetch("https://collegeplacementmanagementsystem-1.onrender.com/api/students", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

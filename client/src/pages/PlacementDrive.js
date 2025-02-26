@@ -20,7 +20,7 @@ const PlacementDrive = () => {
 
     try {
       const newDrive = { company, date, participants };
-      const response = await fetch('http://localhost:5001/api/placements', {
+      const response = await fetch('https://collegeplacementmanagementsystem-1.onrender.com/api/placements', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
