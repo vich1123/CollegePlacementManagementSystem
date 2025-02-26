@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5001/api";
+// Replace with your actual deployed backend URL
+const BASE_URL = "https://your-deployed-backend-url.com/api";
 
 // Debugging function to log API calls
 const logRequest = (method, url, data = null) => {
