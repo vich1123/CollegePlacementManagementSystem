@@ -1,9 +1,9 @@
 const Student = require("../models/Student");
 const Application = require("../models/Application");
-const AcademicRecord = require("../models/academicRecord"); // Ensure filename matches
+const AcademicRecord = require("../models/AcademicRecord"); // Ensure correct filename
 const mongoose = require("mongoose");
 
-// Get all students (Ensure function is defined properly)
+// Get all students
 const getStudents = async (req, res) => {
   try {
     const students = await Student.find();
@@ -58,7 +58,6 @@ const getStudentById = async (req, res) => {
   }
 };
 
-// Export all functions properly
 module.exports = {
   getStudents,
   getStudentById,
