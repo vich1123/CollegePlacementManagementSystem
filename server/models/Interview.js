@@ -1,16 +1,11 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const InterviewSchema = new mongoose.Schema({
-  student: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
-  company: { type: mongoose.Schema.Types.ObjectId, ref: "Company", required: true },
-  schedule: { 
-    type: Date, 
-    required: true, 
-    validate: {
-      validator: (value) => value >= new Date(),
-      message: "Schedule date must be in the future.",
-    },
-  },
+  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+  companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true },
+  date: { type: Date, required: true },
+  status: { type: String, enum: ['Scheduled', 'Completed', 'Cancelled'], default: 'Scheduled' },
+  meetingLink: { type: String }
 });
 
-module.exports = mongoose.model("Interview", InterviewSchema);
+module.exports = mongoose.model('Interview', InterviewSchema);

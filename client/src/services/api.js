@@ -1,99 +1,97 @@
 import axios from "axios";
-const BASE_URL = "https://collegeplacementmanagementsystem-1.onrender.com/api";
 
-// Debugging function to log API calls
+// Base URL Configuration
+const BASE_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5001/api"
+    : "https://collegeplacementmanagementsystem-1.onrender.com/api";
+
+// Debugging function
 const logRequest = (method, url, data = null) => {
   console.log(`API Request → Method: ${method}, URL: ${url}, Data:`, data);
 };
 
-// Fetch all companies
-export const getCompanies = async () => {
-  const url = `${BASE_URL}/companies`;
-  logRequest("GET", url);
+// Helper function for API requests
+const apiCall = async (method, endpoint, data = null, config = {}) => {
+  const url = `${BASE_URL}${endpoint}`;
+  logRequest(method, url, data);
+
   try {
-    const response = await axios.get(url);
+    const response = await axios({ method, url, data, ...config });
+    console.log(`API Response → ${method}: ${url}`, response.data);
     return response.data;
   } catch (error) {
-    console.error("Error fetching companies:", error.response?.data || error.message);
-    throw error;
+    console.error(`Error in ${method} request to ${url}:`, error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || "API request failed.",
+      error: error.response?.data || error.message,
+    };
   }
 };
 
-// Create a new company
-export const createCompany = async (data) => {
-  const url = `${BASE_URL}/companies`;
-  logRequest("POST", url, data);
-  try {
-    const response = await axios.post(url, data);
-    return response.data;
-  } catch (error) {
-    console.error("Error creating company:", error.response?.data || error.message);
-    throw error;
-  }
+// Helper function to validate MongoDB Object ID
+const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
+
+// **Student API**
+export const getStudents = () => apiCall("GET", "/students");
+export const getStudentById = (id) => {
+  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid student ID format." });
+  return apiCall("GET", `/students/${id}`);
+};
+export const createStudent = (data) => apiCall("POST", "/students", data);
+export const updateStudent = (id, data) => {
+  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid ID." });
+  return apiCall("PUT", `/students/${id}`, data);
+};
+export const deleteStudent = (id) => {
+  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid ID." });
+  return apiCall("DELETE", `/students/${id}`);
 };
 
-// Create a new student
-export const createStudent = async (data) => {
-  const url = `${BASE_URL}/students`;
-  logRequest("POST", url, data);
-  try {
-    const response = await axios.post(url, data);
-    return response.data;
-  } catch (error) {
-    console.error("Error creating student:", error.response?.data || error.message);
-    throw error;
-  }
+// **Placement Drive API (FIXED: ADDED createPlacementDrive)**
+export const getPlacements = () => apiCall("GET", "/placements");
+export const createPlacementDrive = (data) => apiCall("POST", "/placements", data);
+
+// **Recruitment Status API**
+export const fetchRecruitmentStatusHistory = () => apiCall("GET", "/recruitment-status/history");
+export const fetchLatestRecruitmentStatus = () => apiCall("GET", "/recruitment-status/latest");
+export const createRecruitmentStatus = (data) => apiCall("POST", "/recruitment-status", data);
+export const deleteRecruitmentStatusById = (id) => {
+  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid recruitment status ID format." });
+  return apiCall("DELETE", `/recruitment-status/${id}`);
+};
+export const deleteAllRecruitmentStatuses = () => apiCall("DELETE", "/recruitment-status");
+
+// **Reports API**
+export const fetchReports = () => apiCall("GET", "/reports");
+
+// **Companies API**
+export const getCompanies = () => apiCall("GET", "/companies");
+export const createCompany = (data) => apiCall("POST", "/companies", data);
+export const updateCompany = (id, data) => {
+  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid company ID." });
+  return apiCall("PUT", `/companies/${id}`, data);
+};
+export const deleteCompany = (id) => {
+  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid company ID." });
+  return apiCall("DELETE", `/companies/${id}`);
 };
 
-// Create a new placement drive
-export const createPlacementDrive = async (data) => {
-  const url = `${BASE_URL}/placements`;
-  logRequest("POST", url, data);
-  try {
-    const response = await axios.post(url, data);
-    return response.data;
-  } catch (error) {
-    console.error("Error creating placement drive:", error.response?.data || error.message);
-    throw error;
-  }
+// **Company Applications API**
+export const getCompanyApplications = (companyId) => {
+  if (!isValidObjectId(companyId)) return Promise.resolve({ success: false, message: "Invalid company ID format." });
+  return apiCall("GET", `/companies/${companyId}/applications`);
 };
 
-// Fetch recruitment status
-export const fetchRecruitmentStatus = async () => {
-  const url = `${BASE_URL}/recruitment-status`;
-  logRequest("GET", url);
-  try {
-    const response = await axios.get(url);
-    console.log("Recruitment Status Response:", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching recruitment status:", error.response?.data || error.message);
-    throw error;
-  }
+// **Application Review API**
+export const reviewApplication = (applicationId, { status, feedback, communicationMessage }) => {
+  if (!isValidObjectId(applicationId)) return Promise.resolve({ success: false, message: "Invalid application ID format." });
+  return apiCall("PUT", `/applications/${applicationId}/review`, { status, feedback, communicationMessage });
 };
 
-// Create or update recruitment status
-export const updateRecruitmentStatus = async (data) => {
-  const url = `${BASE_URL}/recruitment-status`;
-  logRequest("POST", url, data);
-  try {
-    const response = await axios.post(url, data);
-    return response.data;
-  } catch (error) {
-    console.error("Error updating recruitment status:", error.response?.data || error.message);
-    throw error;
-  }
-};
-
-// Delete recruitment status
-export const deleteRecruitmentStatus = async () => {
-  const url = `${BASE_URL}/recruitment-status`;
-  logRequest("DELETE", url);
-  try {
-    const response = await axios.delete(url);
-    return response.data;
-  } catch (error) {
-    console.error("Error deleting recruitment status:", error.response?.data || error.message);
-    throw error;
-  }
+// **Academic Record API**
+export const getAcademicRecordByStudent = (studentId) => {
+  if (!isValidObjectId(studentId)) return Promise.resolve({ success: false, message: "Invalid student ID format." });
+  return apiCall("GET", `/students/${studentId}/academic-record`);
 };

@@ -1,69 +1,89 @@
 import React, { useState } from "react";
-import { addApplication } from "../services/api";
+import "./AddApplication.css";
 
-function AddApplication() {
-  const [formData, setFormData] = useState({
-    student: "",
-    company: "",
-    status: "submitted",
+const AddApplication = () => {
+  const [application, setApplication] = useState({
+    studentName: "",
+    jobTitle: "",
+    companyName: "",
+    resumeLink: "",
   });
+
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setApplication({ ...application, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.student || !formData.company) {
-      setMessage("Please fill in all fields.");
-      return;
-    }
+    setMessage("");
+    setLoading(true);
+
     try {
-      await addApplication(formData);
-      setMessage("Application added successfully!");
-      setFormData({ student: "", company: "", status: "submitted" });
+      const response = await fetch("https://collegeplacementmanagementsystem-1.onrender.com/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(application),
+      });
+
+      if (!response.ok) throw new Error("Failed to submit application");
+
+      setMessage("Application submitted successfully!");
+      setApplication({ studentName: "", jobTitle: "", companyName: "", resumeLink: "" });
     } catch (error) {
-      setMessage("Error adding application. Please try again.");
+      console.error("Error submitting application:", error);
+      setMessage("Error submitting application");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="p-4 bg-white rounded shadow">
-      <h2 className="text-lg font-bold mb-4">Add Application</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="form-container">
+      <form className="form-box" onSubmit={handleSubmit}>
+        <h2 className="form-title">Submit Job Application</h2>
         <input
-          name="student"
-          value={formData.student}
+          type="text"
+          name="studentName"
+          placeholder="Student Name"
+          value={application.studentName}
           onChange={handleChange}
-          placeholder="Student ID"
-          className="input"
+          required
         />
         <input
-          name="company"
-          value={formData.company}
+          type="text"
+          name="jobTitle"
+          placeholder="Job Title"
+          value={application.jobTitle}
           onChange={handleChange}
-          placeholder="Company ID"
-          className="input"
+          required
         />
-        <select
-          name="status"
-          value={formData.status}
+        <input
+          type="text"
+          name="companyName"
+          placeholder="Company Name"
+          value={application.companyName}
           onChange={handleChange}
-          className="input"
-        >
-          <option value="submitted">Submitted</option>
-          <option value="reviewed">Reviewed</option>
-          <option value="shortlisted">Shortlisted</option>
-          <option value="rejected">Rejected</option>
-        </select>
-        <button type="submit" className="btn">
-          Add Application
+          required
+        />
+        <input
+          type="url"
+          name="resumeLink"
+          placeholder="Resume Link"
+          value={application.resumeLink}
+          onChange={handleChange}
+          required
+        />
+        <button className="submit-button" type="submit" disabled={loading}>
+          {loading ? "Submitting..." : "Submit Application"}
         </button>
-        {message && <p className="text-red-500">{message}</p>}
+        {message && <p className="form-message">{message}</p>}
       </form>
     </div>
   );
-}
+};
 
 export default AddApplication;

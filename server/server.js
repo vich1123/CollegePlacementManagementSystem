@@ -1,48 +1,79 @@
 const express = require("express");
 const cors = require("cors");
-const connectDB = require("./config/db"); 
+const path = require("path");
+const connectDB = require("./config/db");
 require("dotenv").config();
 
-// Import Routes
+// ** Import Routes **
 const studentRoutes = require("./routes/students");
 const companyRoutes = require("./routes/companies");
 const placementsRoutes = require("./routes/placements");
 const recruitmentStatusRoutes = require("./routes/recruitmentStatus");
+const academicRecordsRoutes = require("./routes/academicRecords");
+const jobRoutes = require("./routes/jobs");
+const reportsRoutes = require("./routes/reports");
+const notificationsRoutes = require("./routes/notifications"); 
+const interviewsRoutes = require("./routes/interviews");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Proper CORS settings
-app.use(cors({ 
-  origin: "*",  // Allow all origins for development
-  methods: "GET,POST,DELETE,PUT",
-  allowedHeaders: "Content-Type,Authorization"
-}));
+// ** Middleware for Logging Requests **
+app.use((req, res, next) => {
+  console.log(`API Request: ${req.method} ${req.url}`);
+  if (req.body && Object.keys(req.body).length > 0) console.log("Request Body:", req.body);
+  next();
+});
 
-app.use(express.json());
+// ** CORS Middleware **
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://collegeplacementmanagementsystem.netlify.app"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
-// Routes
+// ** JSON Parsing Middleware **
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// ** Static File Serving **
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// ** API Routes **
 app.use("/api/students", studentRoutes);
 app.use("/api/companies", companyRoutes);
-app.use("/api/placements", placementsRoutes); 
+app.use("/api/placements", placementsRoutes);
 app.use("/api/recruitment-status", recruitmentStatusRoutes);
+app.use("/api/academicRecords", academicRecordsRoutes);
+app.use("/api/reports", reportsRoutes);
+app.use("/api/jobs", jobRoutes);
+app.use("/api/notifications", notificationsRoutes);
+app.use("/api/interviews", interviewsRoutes);
+app.use("/api/upload", uploadRoutes);
 
-// Default Route
-app.get("/", (req, res) => {
-  res.send("Welcome to the College Placement Management System API");
-});
-
-// Connect to MongoDB and Start the Server
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
-}).catch((err) => {
-  console.error("Failed to start server due to database connection error:", err.message);
-});
-
-// Error Handling Middleware
+// ** Global Error Handler **
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: "Something went wrong!" });
+  console.error("Global Error Handler:", err.stack);
+  res.status(500).json({ success: false, message: "Internal Server Error", error: err.message });
 });
+
+// ** Connect to MongoDB and Start Server **
+const startServer = async () => {
+  try {
+    await connectDB();
+    console.log("MongoDB Connected Successfully");
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("Database Connection Failed:", err);
+    process.exit(1);
+  }
+};
+
+// ** Start the Server **
+startServer();

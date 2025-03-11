@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
 
-const applicationSchema = new mongoose.Schema({
+const ApplicationSchema = new mongoose.Schema({
   student: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
   company: { type: mongoose.Schema.Types.ObjectId, ref: "Company", required: true },
-  status: { type: String, enum: ["submitted", "reviewed", "shortlisted", "rejected"], default: "submitted" },
-  feedback: { type: String, default: "" },
-  createdAt: { type: Date, default: Date.now },
+  coverLetter: { type: String, required: true },
+  resume: { type: String, required: true }, // Stores file path
+  status: { type: String, enum: ["pending", "reviewed", "rejected", "accepted"], default: "pending" },
+  appliedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.models.Application || mongoose.model("Application", applicationSchema);
+module.exports = mongoose.model("Application", ApplicationSchema);

@@ -1,38 +1,87 @@
-import React, { useState, useEffect } from "react";
-import { fetchCompanies } from "../services/api";
+import React, { useEffect, useState } from "react";
+import { getCompanies } from "../services/api";
+import "./CompanyList.css";
 
-function CompanyList() {
+const CompanyList = () => {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [industryFilter, setIndustryFilter] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
 
   useEffect(() => {
-    const loadCompanies = async () => {
+    const fetchCompanies = async () => {
       try {
-        const data = await fetchCompanies();
-        setCompanies(data);
+        const queryParams = new URLSearchParams();
+        if (search) queryParams.append("search", search);
+        if (industryFilter) queryParams.append("industry", industryFilter);
+        if (locationFilter) queryParams.append("location", locationFilter);
+
+        const data = await getCompanies(queryParams.toString());
+        setCompanies(data.data || []);
       } catch (error) {
         console.error("Error fetching companies:", error);
       } finally {
         setLoading(false);
       }
     };
-    loadCompanies();
-  }, []);
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+    fetchCompanies();
+  }, [search, industryFilter, locationFilter]);
 
   return (
-    <div className="p-4 bg-white rounded shadow">
-      <h2 className="text-lg font-bold mb-4">Company List</h2>
-      <ul className="list-disc pl-6">
-        {companies.map((company) => (
-          <li key={company.id}>{company.name}</li>
-        ))}
-      </ul>
+    <div className="list-container">
+      <h2 className="list-title">Company List</h2>
+
+      {/* Search and Filter Options */}
+      <div className="filters">
+        <input
+          type="text"
+          placeholder="Search by company name"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="filter-input"
+        />
+        <select
+          value={industryFilter}
+          onChange={(e) => setIndustryFilter(e.target.value)}
+          className="filter-select"
+        >
+          <option value="">Filter by Industry</option>
+          <option value="Technology">Technology</option>
+          <option value="Finance">Finance</option>
+          <option value="Healthcare">Healthcare</option>
+          <option value="Education">Education</option>
+        </select>
+        <select
+          value={locationFilter}
+          onChange={(e) => setLocationFilter(e.target.value)}
+          className="filter-select"
+        >
+          <option value="">Filter by Location</option>
+          <option value="New York">New York</option>
+          <option value="San Francisco">San Francisco</option>
+          <option value="Los Angeles">Los Angeles</option>
+          <option value="Chicago">Chicago</option>
+        </select>
+      </div>
+
+      {loading ? (
+        <p>Loading...</p>
+      ) : companies.length === 0 ? (
+        <p>No companies found.</p>
+      ) : (
+        <ul className="list-content">
+          {companies.map((company) => (
+            <li key={company._id} className="list-item">
+              <strong>{company.name}</strong> - {company.industry}, {company.location}
+              <p>Job Openings: {company.jobPostings.length > 0 ? company.jobPostings.join(", ") : "No jobs listed"}</p>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
-}
+};
 
 export default CompanyList;

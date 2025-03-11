@@ -1,21 +1,10 @@
 const mongoose = require("mongoose");
 
-const jobSchema = new mongoose.Schema(
-  {
-    title: { type: String, required: true },
-    description: { type: String },
-    requirements: { 
-      type: String, 
-      default: "Not specified" 
-    }, // Optional field
-    salaryRange: { 
-      type: String, 
-      default: "Not disclosed" 
-    }, // Optional field
-    company: { type: mongoose.Schema.Types.ObjectId, ref: "Company", required: true },
-    applications: [{ type: mongoose.Schema.Types.ObjectId, ref: "Application" }],
-  },
-  { timestamps: true }
-);
+const JobSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  company: { type: String, required: true },
+  experience: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+});
 
-module.exports = mongoose.model("Job", jobSchema);
+module.exports = mongoose.model("Job", JobSchema);

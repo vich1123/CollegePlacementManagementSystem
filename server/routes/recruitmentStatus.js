@@ -1,11 +1,22 @@
 const express = require("express");
-const { getRecruitmentStatus, createRecruitmentStatus, deleteRecruitmentStatus } = require("../controllers/recruitmentStatusController");
-
 const router = express.Router();
+const {
+  getRecruitmentStatusHistory,
+  getLatestRecruitmentStatus,
+  createRecruitmentStatus,
+  deleteRecruitmentStatus
+} = require("../controllers/recruitmentStatusController");
 
-// Define Routes
-router.get("/", getRecruitmentStatus);
+// Fetch recruitment status history (for charts)
+router.get("/history", getRecruitmentStatusHistory);
+
+// Fetch latest recruitment status
+router.get("/latest", getLatestRecruitmentStatus);
+
+// Create recruitment status
 router.post("/", createRecruitmentStatus);
+
+// Delete all recruitment statuses
 router.delete("/", deleteRecruitmentStatus);
 
 module.exports = router;

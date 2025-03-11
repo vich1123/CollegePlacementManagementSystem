@@ -33,10 +33,15 @@ const placementRoutes = require('./routes/placements');
 const recruitmentRoutes = require('./routes/recruitmentStatus');
 
 // API Routes
-app.use('/api/students', studentRoutes);
-app.use('/api/companies', companyRoutes);
-app.use('/api/placements', placementRoutes);
-app.use('/api/recruitment-status', recruitmentRoutes);
+app.use("/api/students", studentRoutes);
+app.use("/api/companies", companyRoutes);
+app.use("/api/placements", placementsRoutes);
+app.use("/api/recruitment-status", recruitmentStatusRoutes);
+app.use("/api/academicRecords", academicRecordsRoutes);
+app.use("/api/reports", reportsRoutes);
+app.use("/api/notifications", notificationsRoutes);
+app.use("/api/interviews", interviewsRoutes);
+
 
 // Serve frontend build files
 const buildPath = path.join(__dirname, 'build');
