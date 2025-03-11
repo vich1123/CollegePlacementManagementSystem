@@ -29,8 +29,12 @@ app.use((req, res, next) => {
 // CORS Middleware
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://collegeplacementmanagementsystem.netlify.app"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: [
+      "http://localhost:3000",
+      "https://collegeplacementmanagementsystem.netlify.app",
+      "https://collegeplacementmanagementsystem-1.onrender.com",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
@@ -43,7 +47,7 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // Static File Serving
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Test Route to Check If API is Working
+// Test API Route
 app.get("/api/test", (req, res) => {
   res.json({ success: true, message: "API is working!" });
 });
@@ -60,7 +64,7 @@ app.use("/api/notifications", notificationsRoutes);
 app.use("/api/interviews", interviewsRoutes);
 app.use("/api/upload", uploadRoutes);
 
-// Handle 404 Routes
+// Handle 404 Route Not Found
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route not found" });
 });
