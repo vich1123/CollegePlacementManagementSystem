@@ -1,11 +1,12 @@
 const RecruitmentStatus = require("../models/RecruitmentStatus");
+const mongoose = require("mongoose");
 
 // Fetch all recruitment status history
 exports.getRecruitmentStatusHistory = async (req, res) => {
   try {
-    const statuses = await RecruitmentStatus.find().sort({ createdAt: 1 }); // Fetch in ascending order
+    const statuses = await RecruitmentStatus.find().sort({ createdAt: 1 });
 
-    if (!statuses || statuses.length === 0) {
+    if (!statuses.length) {
       return res.status(404).json({ success: false, message: "No recruitment status history found" });
     }
 
@@ -19,7 +20,7 @@ exports.getRecruitmentStatusHistory = async (req, res) => {
 // Fetch the latest recruitment status
 exports.getLatestRecruitmentStatus = async (req, res) => {
   try {
-    const status = await RecruitmentStatus.findOne().sort({ createdAt: -1 }); // Get latest
+    const status = await RecruitmentStatus.findOne().sort({ createdAt: -1 });
 
     if (!status) {
       return res.status(404).json({ success: false, message: "No latest recruitment status found" });
@@ -37,7 +38,11 @@ exports.createRecruitmentStatus = async (req, res) => {
   try {
     const { studentsPlaced, offersMade, companiesParticipated } = req.body;
 
-    if (!studentsPlaced || !offersMade || !companiesParticipated) {
+    if (
+      studentsPlaced === undefined ||
+      offersMade === undefined ||
+      companiesParticipated === undefined
+    ) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
@@ -45,23 +50,38 @@ exports.createRecruitmentStatus = async (req, res) => {
       studentsPlaced,
       offersMade,
       companiesParticipated,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     await newStatus.save();
 
-    res.status(201).json({ success: true, message: "Recruitment status created successfully", data: newStatus });
+    res.status(201).json({
+      success: true,
+      message: "Recruitment status created successfully",
+      data: newStatus,
+    });
   } catch (error) {
     console.error("Error creating recruitment status:", error);
-    res.status(500).json({ success: false, message: "Error creating recruitment status", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error creating recruitment status",
+      error: error.message,
+    });
   }
 };
 
 // Delete all recruitment statuses
-exports.deleteRecruitmentStatus = async (req, res) => {
+exports.deleteAllRecruitmentStatuses = async (req, res) => {
   try {
-    await RecruitmentStatus.deleteMany({});
-    res.status(200).json({ success: true, message: "All recruitment statuses deleted successfully" });
+    const result = await RecruitmentStatus.deleteMany({});
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, message: "No recruitment statuses found to delete" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "All recruitment statuses deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting recruitment statuses:", error);
     res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
@@ -72,6 +92,11 @@ exports.deleteRecruitmentStatus = async (req, res) => {
 exports.deleteRecruitmentStatusById = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: "Invalid recruitment status ID format" });
+    }
+
     const status = await RecruitmentStatus.findByIdAndDelete(id);
 
     if (!status) {

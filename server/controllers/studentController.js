@@ -1,6 +1,6 @@
 const Student = require("../models/Student");
 const Application = require("../models/Application");
-const AcademicRecord = require("../models/AcademicRecord"); // Ensure correct filename
+const AcademicRecord = require("../models/AcademicRecord"); 
 const mongoose = require("mongoose");
 
 // Get all students
@@ -10,18 +10,14 @@ const getStudents = async (req, res) => {
     res.status(200).json({ success: true, data: students });
   } catch (error) {
     console.error("Error fetching students:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error fetching students",
-      error: error.message,
-    });
+    res.status(500).json({ success: false, message: "Error fetching students", error: error.message });
   }
 };
 
 // Fetch a single student by ID
 const getStudentById = async (req, res) => {
   try {
-    const studentId = req.params.id?.trim();
+    const studentId = req.params.id.trim();
 
     if (!studentId || !mongoose.Types.ObjectId.isValid(studentId)) {
       console.error("Invalid student ID format:", studentId);
@@ -50,14 +46,11 @@ const getStudentById = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching student details:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error fetching student details",
-      error: error.message,
-    });
+    res.status(500).json({ success: false, message: "Error fetching student details", error: error.message });
   }
 };
 
+// Export functions
 module.exports = {
   getStudents,
   getStudentById,

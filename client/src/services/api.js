@@ -49,7 +49,19 @@ export const deleteStudent = (id) => {
   return apiCall("DELETE", `/students/${id}`);
 };
 
-// **Placement Drive API (FIXED: ADDED createPlacementDrive)**
+// **Job API (Fixed)**
+export const getJobs = () => apiCall("GET", "/jobs");
+export const createJob = (data) => apiCall("POST", "/jobs", data);
+export const getJobById = (id) => {
+  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid job ID format." });
+  return apiCall("GET", `/jobs/${id}`);
+};
+export const deleteJob = (id) => {
+  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid job ID format." });
+  return apiCall("DELETE", `/jobs/${id}`);
+};
+
+// **Placement Drive API**
 export const getPlacements = () => apiCall("GET", "/placements");
 export const createPlacementDrive = (data) => apiCall("POST", "/placements", data);
 

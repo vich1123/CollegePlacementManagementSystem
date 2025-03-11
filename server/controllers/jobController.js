@@ -1,34 +1,36 @@
 const Job = require("../models/Job");
 
-// Create Job
+// Create a new job
 exports.createJob = async (req, res) => {
   try {
-    const { title, company, experience } = req.body;
-    if (!title || !company || !experience) {
-      return res.status(400).json({ success: false, message: "All fields are required." });
+    const { title, company, description, requirements } = req.body;
+
+    if (!title || !company || !description || !requirements) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    const newJob = new Job({ title, company, experience });
+    const newJob = new Job({ title, company, description, requirements });
     await newJob.save();
-    res.status(201).json({ success: true, message: "Job posted successfully!", job: newJob });
+
+    res.status(201).json({ success: true, message: "Job created successfully", data: newJob });
   } catch (error) {
-    console.error("Error posting job:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    console.error("Error creating job:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
 
-// Fetch all jobs
+// Get all jobs
 exports.getJobs = async (req, res) => {
   try {
     const jobs = await Job.find();
     res.status(200).json({ success: true, data: jobs });
   } catch (error) {
     console.error("Error fetching jobs:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
 
-// Fetch job by ID
+// Get job by ID
 exports.getJobById = async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);
@@ -38,11 +40,11 @@ exports.getJobById = async (req, res) => {
     res.status(200).json({ success: true, data: job });
   } catch (error) {
     console.error("Error fetching job:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
 
-// Delete Job
+// Delete job by ID
 exports.deleteJob = async (req, res) => {
   try {
     const job = await Job.findByIdAndDelete(req.params.id);
@@ -52,6 +54,6 @@ exports.deleteJob = async (req, res) => {
     res.status(200).json({ success: true, message: "Job deleted successfully" });
   } catch (error) {
     console.error("Error deleting job:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };

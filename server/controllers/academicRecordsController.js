@@ -1,4 +1,4 @@
-const AcademicRecord = require("../models/academicRecord"); // Ensure correct case
+const AcademicRecord = require("../models/AcademicRecord");
 
 // Get all academic records
 exports.getAcademicRecords = async (req, res) => {

@@ -22,7 +22,9 @@ const PORT = process.env.PORT || 5001;
 // Middleware for Logging Requests
 app.use((req, res, next) => {
   console.log(`API Request: ${req.method} ${req.url}`);
-  if (req.body && Object.keys(req.body).length > 0) console.log("Request Body:", req.body);
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log("Request Body:", JSON.stringify(req.body, null, 2));
+  }
   next();
 });
 
@@ -64,20 +66,20 @@ app.use("/api/notifications", notificationsRoutes);
 app.use("/api/interviews", interviewsRoutes);
 app.use("/api/upload", uploadRoutes);
 
-// Route Logging for Debugging
+// Debugging Registered Routes
+console.log("\n*** Registered API Routes ***");
 app._router.stack.forEach((middleware) => {
   if (middleware.route) {
-    // Routes registered directly on app
-    console.log(`Registered route: ${middleware.route.path}`);
+    console.log(`Registered Route: ${middleware.route.path}`);
   } else if (middleware.name === "router") {
-    // Routes added as router
     middleware.handle.stack.forEach((route) => {
       if (route.route) {
-        console.log(`Registered route: ${route.route.path}`);
+        console.log(`Registered Route: ${route.route.path}`);
       }
     });
   }
 });
+console.log("*** End of Routes ***\n");
 
 // Handle 404 Route Not Found
 app.use((req, res) => {
