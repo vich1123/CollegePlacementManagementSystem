@@ -83,7 +83,7 @@ const startServer = async () => {
     console.log("MongoDB Connected Successfully");
 
     app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
   } catch (err) {
     console.error("Database Connection Failed:", err);
