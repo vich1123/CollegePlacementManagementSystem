@@ -36,6 +36,35 @@ const getCompanyById = async (req, res) => {
   }
 };
 
+// ** Fetch company by name (Fix for Interview Scheduler) **
+const getCompanyByName = async (req, res) => {
+  try {
+    let { companyName } = req.params;
+    companyName = companyName.trim().toLowerCase();
+
+    if (!companyName) {
+      return res.status(400).json({ success: false, message: "Company name is required." });
+    }
+
+    const company = await Company.findOne({ name: new RegExp(`^${companyName}$`, "i") });
+
+    if (!company) {
+      return res.status(404).json({ success: false, message: "Company not found." });
+    }
+
+    res.status(200).json({
+      success: true,
+      company: {
+        id: company._id,
+        name: company.name,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching company by name:", error);
+    res.status(500).json({ success: false, message: "Error fetching company", error: error.message });
+  }
+};
+
 // ** Fetch all applications for a company **
 const getCompanyApplications = async (req, res) => {
   try {
@@ -151,6 +180,7 @@ const reviewApplication = async (req, res) => {
 module.exports = {
   getCompanies,
   getCompanyById,
+  getCompanyByName, // Fixed for Interview Scheduler
   getCompanyApplications,
   addCompany,
   updateCompany,

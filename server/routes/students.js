@@ -27,16 +27,16 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ** Get student by email **
+// ** Get student by email (For Interview Scheduler) **
 router.get("/email/:email", async (req, res) => {
   try {
-    const { email } = req.params;
+    const decodedEmail = decodeURIComponent(req.params.email).toLowerCase();
 
-    if (!email || !email.includes("@")) {
+    if (!decodedEmail.includes("@")) {
       return res.status(400).json({ success: false, message: "Invalid email format." });
     }
 
-    const student = await Student.findOne({ email });
+    const student = await Student.findOne({ email: decodedEmail });
 
     if (!student) {
       return res.status(404).json({ success: false, message: "Student not found." });
@@ -44,11 +44,7 @@ router.get("/email/:email", async (req, res) => {
 
     res.status(200).json({
       success: true,
-      student: {
-        id: student._id,
-        name: student.name,
-        email: student.email,
-      },
+      studentId: student._id, // Return only the ID as expected by the frontend
     });
   } catch (error) {
     console.error("Error fetching student:", error);

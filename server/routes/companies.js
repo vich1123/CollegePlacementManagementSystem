@@ -6,7 +6,8 @@ const {
   reviewApplication,
   addCompany,
   updateCompany,
-  deleteCompany
+  deleteCompany,
+  getCompanyByName, 
 } = require("../controllers/companyController");
 
 const router = express.Router();
@@ -16,6 +17,9 @@ router.use((req, res, next) => {
   console.log(`Company API Request: ${req.method} ${req.originalUrl}`);
   next();
 });
+
+// ** New Route: Get Company by Name (For Interview Scheduler) **
+router.get("/name/:companyName", getCompanyByName); // :id to avoid conflict
 
 // ** Define API Routes **
 router.get("/", getCompanies);  // Fetch all companies

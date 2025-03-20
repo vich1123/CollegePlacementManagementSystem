@@ -52,7 +52,6 @@ function App() {
 
   return (
     <Router>
-      {/* Navigation Bar */}
       <header className="navbar">
         <h1 className="navbar-title">COLLEGE PLACEMENT MANAGEMENT SYSTEM</h1>
         <nav className="menu">
@@ -77,13 +76,10 @@ function App() {
         </nav>
       </header>
 
-      {/* Routes */}
       <main className="content-container">
         {error && <p className="error-message">Error: {error}</p>}
         <Routes>
-          {/* Default route - Redirect to Admin Panel */}
           <Route path="/" element={<Navigate to="/admin-dashboard" replace />} />
-
           <Route path="/student-dashboard/:studentId" element={<StudentDashboard />} />
           <Route path="/company-dashboard" element={<CompanyDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
@@ -96,8 +92,6 @@ function App() {
           <Route path="/job-posting" element={<JobPosting />} />
           <Route path="/interview-scheduler" element={<InterviewScheduler />} />
           <Route path="/student-applications" element={<StudentApplications />} />
-
-          {/* 404 Page */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

@@ -21,37 +21,37 @@ function InterviewScheduler() {
   };
 
   // Function to fetch student ID using email
-  const fetchStudentId = async () => {
+  const fetchStudentId = async (email) => {
     try {
       const response = await axios.get(
-        `https://collegeplacementmanagementsystem-1.onrender.com/api/students/email/${encodeURIComponent(formData.studentEmail)}`
+        `/api/students/email/${encodeURIComponent(email)}`
       );
 
-      if (response.data.success && response.data.studentId) {
-        return response.data.studentId;
+      if (response.data.success && response.data.student?.id) {
+        return response.data.student.id;
       } else {
         return null;
       }
     } catch (error) {
-      console.error("Error fetching student ID:", error);
+      console.error("Error fetching student ID:", error.response?.data || error.message);
       return null;
     }
   };
 
   // Function to fetch company ID using name
-  const fetchCompanyId = async () => {
+  const fetchCompanyId = async (companyName) => {
     try {
       const response = await axios.get(
-        `https://collegeplacementmanagementsystem-1.onrender.com/api/companies/name/${encodeURIComponent(formData.company)}`
+        `/api/companies/name/${encodeURIComponent(companyName)}`
       );
 
-      if (response.data.success && response.data.companyId) {
-        return response.data.companyId;
+      if (response.data.success && response.data.company?.id) {
+        return response.data.company.id;
       } else {
         return null;
       }
     } catch (error) {
-      console.error("Error fetching company ID:", error);
+      console.error("Error fetching company ID:", error.response?.data || error.message);
       return null;
     }
   };
@@ -62,12 +62,19 @@ function InterviewScheduler() {
     setLoading(true);
 
     try {
+      // Validate required fields before proceeding
+      if (!formData.studentEmail || !formData.company || !formData.jobTitle || !formData.date || !formData.time) {
+        setMessage("Please fill out all required fields.");
+        setLoading(false);
+        return;
+      }
+
       // Get student ID and company ID
-      const studentId = await fetchStudentId();
-      const companyId = await fetchCompanyId();
+      const studentId = await fetchStudentId(formData.studentEmail);
+      const companyId = await fetchCompanyId(formData.company);
 
       if (!studentId || !companyId) {
-        setMessage("Invalid student email or company name.");
+        setMessage("Invalid student email or company name. Please check and try again.");
         setLoading(false);
         return;
       }
@@ -79,12 +86,12 @@ function InterviewScheduler() {
         jobTitle: formData.jobTitle,
         date: formData.date,
         time: formData.time,
-        interviewLink: formData.interviewLink,
+        interviewLink: formData.interviewLink || "N/A", // Provide a default if empty
       };
 
       // Schedule the interview in the backend
       const response = await axios.post(
-        "https://collegeplacementmanagementsystem-1.onrender.com/api/interviews/schedule",
+        "/api/interviews/schedule",
         interviewData
       );
 
@@ -93,14 +100,14 @@ function InterviewScheduler() {
 
         // Send interview notification
         await axios.post(
-          "https://collegeplacementmanagementsystem-1.onrender.com/api/notifications/interview",
+          "/api/notifications/interview",
           {
             email: formData.studentEmail,
             interviewDate: formData.date,
             interviewTime: formData.time,
             companyName: formData.company,
             jobTitle: formData.jobTitle,
-            interviewLink: formData.interviewLink,
+            interviewLink: formData.interviewLink || "N/A",
           }
         );
 
@@ -118,7 +125,7 @@ function InterviewScheduler() {
           interviewLink: "",
         });
       } else {
-        setMessage("Failed to schedule the interview.");
+        setMessage("Failed to schedule the interview. Please try again.");
       }
     } catch (error) {
       console.error("Error scheduling interview:", error.response?.data || error.message);
@@ -135,6 +142,7 @@ function InterviewScheduler() {
 
         <input
           name="studentEmail"
+          type="email"
           value={formData.studentEmail}
           onChange={handleChange}
           placeholder="Student Email"
@@ -161,7 +169,6 @@ function InterviewScheduler() {
           value={formData.interviewLink}
           onChange={handleChange}
           placeholder="Interview Link (Zoom, Google Meet, etc.)"
-          required
         />
 
         <button type="submit" className="submit-btn" disabled={loading}>
