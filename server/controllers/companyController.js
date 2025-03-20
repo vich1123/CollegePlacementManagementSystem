@@ -40,11 +40,11 @@ const getCompanyById = async (req, res) => {
 const getCompanyByName = async (req, res) => {
   try {
     let { companyName } = req.params;
-    companyName = companyName.trim().toLowerCase();
-
-    if (!companyName) {
+    if (!companyName || companyName.trim() === "") {
       return res.status(400).json({ success: false, message: "Company name is required." });
     }
+
+    companyName = companyName.trim().toLowerCase();
 
     const company = await Company.findOne({ name: new RegExp(`^${companyName}$`, "i") });
 
@@ -73,7 +73,8 @@ const getCompanyApplications = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid company ID format." });
     }
 
-    const applications = await Application.find({ companyId }).populate("studentId", "name email");
+    const applications = await Application.find({ company: companyId }).populate("student", "name email");
+    
     res.status(200).json({ success: true, data: applications });
   } catch (error) {
     console.error("Error fetching company applications:", error);
@@ -180,7 +181,7 @@ const reviewApplication = async (req, res) => {
 module.exports = {
   getCompanies,
   getCompanyById,
-  getCompanyByName, // Fixed for Interview Scheduler
+  getCompanyByName,
   getCompanyApplications,
   addCompany,
   updateCompany,
