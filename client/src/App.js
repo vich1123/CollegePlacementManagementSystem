@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
 import AdminDashboard from "./pages/AdminDashboard";
 import StudentDashboard from "./components/StudentDashboard";
@@ -12,6 +12,7 @@ import PlacementDrive from "./components/PlacementDrive";
 import JobPosting from "./components/JobPosting";
 import InterviewScheduler from "./components/InterviewScheduler";
 import StudentApplications from "./pages/StudentApplications";
+import { getStudents } from "./services/api"; // Fetch student data
 import "./App.css";
 
 // 404 Page Component
@@ -24,13 +25,46 @@ const NotFound = () => (
 );
 
 function App() {
+  const [studentId, setStudentId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch first available student ID
+  useEffect(() => {
+    const fetchStudentId = async () => {
+      try {
+        const response = await getStudents();
+        if (response.success && response.data.length > 0) {
+          setStudentId(response.data[0]._id); // Use first student's ID
+        } else {
+          console.warn("No students found in the database.");
+        }
+      } catch (error) {
+        console.error("Error fetching student ID:", error);
+        setError("Failed to fetch student data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudentId();
+  }, []);
+
   return (
     <Router>
       {/* Navigation Bar */}
       <header className="navbar">
         <h1 className="navbar-title">COLLEGE PLACEMENT MANAGEMENT SYSTEM</h1>
         <nav className="menu">
-          <Link to="/student-dashboard/676fca128068ea4f4e6a6371d" className="menu-item">Student Dashboard</Link>
+          {loading ? (
+            <span className="menu-item disabled">Loading...</span>
+          ) : studentId ? (
+            <Link to={`/student-dashboard/${studentId}`} className="menu-item">
+              Student Dashboard
+            </Link>
+          ) : (
+            <span className="menu-item disabled">Student Dashboard (No Data)</span>
+          )}
           <Link to="/company-dashboard" className="menu-item">Company Dashboard</Link>
           <Link to="/admin-dashboard" className="menu-item">Admin Panel</Link>
           <Link to="/recruitment-status" className="menu-item">Recruitment Status</Link>
@@ -45,6 +79,7 @@ function App() {
 
       {/* Routes */}
       <main className="content-container">
+        {error && <p className="error-message">Error: {error}</p>}
         <Routes>
           {/* Default route - Redirect to Admin Panel */}
           <Route path="/" element={<Navigate to="/admin-dashboard" replace />} />

@@ -1,12 +1,16 @@
 const Student = require("../models/Student");
 const Application = require("../models/Application");
-const AcademicRecord = require("../models/AcademicRecord"); 
+const AcademicRecord = require("../models/academicRecord");
 const mongoose = require("mongoose");
 
-// Get all students
+// ** Validate MongoDB ObjectId **
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+// ** Get all students **
 const getStudents = async (req, res) => {
   try {
     const students = await Student.find();
+    
     res.status(200).json({ success: true, data: students });
   } catch (error) {
     console.error("Error fetching students:", error);
@@ -14,34 +18,34 @@ const getStudents = async (req, res) => {
   }
 };
 
-// Fetch a single student by ID
+// ** Fetch a single student by ID **
 const getStudentById = async (req, res) => {
   try {
     const studentId = req.params.id.trim();
 
-    if (!studentId || !mongoose.Types.ObjectId.isValid(studentId)) {
-      console.error("Invalid student ID format:", studentId);
+    if (!isValidObjectId(studentId)) {
       return res.status(400).json({ success: false, message: "Invalid student ID format." });
     }
 
     const student = await Student.findById(studentId);
     if (!student) {
-      console.error("Student not found with ID:", studentId);
       return res.status(404).json({ success: false, message: "Student not found" });
     }
 
-    const latestApplication = await Application.findOne({ studentId })
+    const latestApplication = await Application.findOne({ student: studentId })
       .sort({ createdAt: -1 })
-      .select("status jobTitle companyId createdAt");
+      .select("status jobTitle company createdAt")
+      .populate("company", "name");
 
-    const academicRecord = await AcademicRecord.findOne({ studentId }).select("grades achievements transcripts lastUpdated");
+    const academicRecord = await AcademicRecord.findOne({ student: studentId })
+      .select("grades achievements transcripts lastUpdated");
 
     res.status(200).json({
       success: true,
       data: {
         student,
-        latestApplication: latestApplication || "No applications found",
-        academicRecord: academicRecord || "No academic records found",
+        latestApplication: latestApplication || null,
+        academicRecord: academicRecord || null,
       },
     });
   } catch (error) {
@@ -50,8 +54,8 @@ const getStudentById = async (req, res) => {
   }
 };
 
-// Export functions
+// ** Export functions **
 module.exports = {
   getStudents,
-  getStudentById,
+  getStudentById
 };

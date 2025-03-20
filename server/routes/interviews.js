@@ -1,12 +1,23 @@
 const express = require("express");
-const router = express.Router();
-const interviewController = require("../controllers/interviewController");
+const {
+  scheduleInterview,
+  sendInterviewReminder,
+  submitFeedback,
+  getFeedback
+} = require("../controllers/interviewController");
 
-// Ensure that all functions exist in the controller
-router.get("/", interviewController.getInterviews || ((req, res) => res.status(501).json({ message: "Not Implemented" })));
-router.get("/:interviewId/generate-link", interviewController.generateMeetingLink || ((req, res) => res.status(501).json({ message: "Not Implemented" })));
-router.post("/schedule", interviewController.scheduleInterview);
-router.post("/:interviewId/feedback", interviewController.submitFeedback);
-router.get("/:interviewId/feedback", interviewController.getFeedback);
+const router = express.Router();
+
+// Schedule an Interview
+router.post("/schedule", scheduleInterview);
+
+// Send Interview Reminder
+router.post("/:interviewId/reminder", sendInterviewReminder);
+
+// Submit Feedback for Interview
+router.post("/:interviewId/feedback", submitFeedback);
+
+// Get Feedback for Interview
+router.get("/:interviewId/feedback", getFeedback);
 
 module.exports = router;

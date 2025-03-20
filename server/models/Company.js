@@ -13,8 +13,20 @@ const CompanySchema = new mongoose.Schema(
       default: [],
     },
     reviews: {
-      type: [String],
+      type: [
+        {
+          userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+          comment: { type: String, trim: true, required: true },
+          rating: { type: Number, required: true, min: 1, max: 5 },
+        },
+      ],
       default: [],
+    },
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
     },
     contactEmail: {
       type: String,
@@ -50,10 +62,34 @@ const CompanySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Case-insensitive uniqueness for `name`
+// Ensure uniqueness for company name (case-insensitive)
 CompanySchema.index({ name: 1 }, { unique: true, collation: { locale: "en", strength: 2 } });
 
-// Ensuring uniqueness for email
+// Ensure uniqueness for email
 CompanySchema.index({ contactEmail: 1 }, { unique: true });
+
+// Method to Add Review and Update Rating
+CompanySchema.methods.addReview = async function (userId, comment, rating) {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Error("Invalid user ID format.");
+    }
+
+    if (rating < 1 || rating > 5) {
+      throw new Error("Rating must be between 1 and 5.");
+    }
+
+    this.reviews.push({ userId, comment, rating });
+
+    // Calculate new average rating
+    const totalRatings = this.reviews.reduce((acc, review) => acc + review.rating, 0);
+    this.averageRating = this.reviews.length > 0 ? parseFloat((totalRatings / this.reviews.length).toFixed(2)) : 0;
+
+    await this.save();
+    return this;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 
 module.exports = mongoose.model("Company", CompanySchema);

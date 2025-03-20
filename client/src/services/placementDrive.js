@@ -23,3 +23,25 @@ export const getPlacementDrives = async () => {
     throw error;
   }
 };
+
+// Function to update placement drive status
+export const updatePlacementDriveStatus = async (id, status) => {
+  try {
+    const response = await axios.put(`${BASE_URL}/${id}`, { status });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating placement drive status:", error);
+    throw error;
+  }
+};
+
+// Function to delete a placement drive
+export const deletePlacementDrive = async (id) => {
+  try {
+    const response = await axios.delete(`${BASE_URL}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting placement drive:", error);
+    throw error;
+  }
+};

@@ -19,12 +19,12 @@ const connectDB = async () => {
     mongoose.set("strictQuery", true);
 
     // Attempt connection
-    const conn = await mongoose.connect(mongoURI, {
+    await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
 
-    console.log(`MongoDB Connected Successfully: ${conn.connection.host}`);
+    console.log("MongoDB Connected Successfully");
   } catch (err) {
     console.error("MongoDB connection error:", err.message);
 

@@ -1,8 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const connectDB = require("./config/db");
+const mongoose = require("mongoose");
 require("dotenv").config();
+
+const connectDB = require("./config/db");
 
 // Import Routes
 const studentRoutes = require("./routes/students");
@@ -19,7 +21,25 @@ const uploadRoutes = require("./routes/uploadRoutes");
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Middleware for Logging Requests
+// CORS Configuration
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+
+app.options("*", (req, res) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.sendStatus(200);
+});
+
+// Middleware for Debugging API Requests
 app.use((req, res, next) => {
   console.log(`API Request: ${req.method} ${req.url}`);
   if (req.body && Object.keys(req.body).length > 0) {
@@ -28,31 +48,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// CORS Middleware
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "https://collegeplacementmanagementsystem.netlify.app",
-      "https://collegeplacementmanagementsystem-1.onrender.com",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
-
 // JSON Parsing Middleware
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// Static File Serving
+// Serve Static Files (Uploads)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// Test API Route
-app.get("/api/test", (req, res) => {
-  res.json({ success: true, message: "API is working!" });
-});
 
 // API Routes
 app.use("/api/students", studentRoutes);
@@ -66,47 +67,53 @@ app.use("/api/notifications", notificationsRoutes);
 app.use("/api/interviews", interviewsRoutes);
 app.use("/api/upload", uploadRoutes);
 
-// Debugging Registered Routes
-console.log("\n*** Registered API Routes ***");
-app._router.stack.forEach((middleware) => {
-  if (middleware.route) {
-    console.log(`Registered Route: ${middleware.route.path}`);
-  } else if (middleware.name === "router") {
-    middleware.handle.stack.forEach((route) => {
-      if (route.route) {
-        console.log(`Registered Route: ${route.route.path}`);
-      }
-    });
-  }
-});
-console.log("*** End of Routes ***\n");
-
-// Handle 404 Route Not Found
+// Handle 404 Errors
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: "Route not found" });
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+    requestedRoute: req.originalUrl,
+  });
 });
 
 // Global Error Handler
 app.use((err, req, res, next) => {
   console.error("Global Error Handler:", err.stack);
-  res.status(500).json({ success: false, message: "Internal Server Error", error: err.message });
+  res.status(500).json({
+    success: false,
+    message: "Internal Server Error",
+    error: err.message,
+  });
 });
 
-// Connect to MongoDB and Start Server
+// Start Server and Connect to MongoDB
 const startServer = async () => {
   try {
     console.log("Attempting to connect to MongoDB...");
     await connectDB();
     console.log("MongoDB Connected Successfully");
 
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+    const server = app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
     });
+
+    // Graceful Shutdown for Stability
+    const gracefulShutdown = async (signal) => {
+      console.log(`Received ${signal}. Shutting down gracefully...`);
+      await mongoose.connection.close();
+      server.close(() => {
+        console.log("Server closed.");
+        process.exit(0);
+      });
+    };
+
+    process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+    process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
   } catch (err) {
     console.error("Database Connection Failed:", err);
     process.exit(1);
   }
 };
 
-// Start the Server
+// Start the Server only if MongoDB is Connected Properly
 startServer();

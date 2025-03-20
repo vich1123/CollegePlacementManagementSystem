@@ -13,7 +13,7 @@ const ApplicationStatus = ({ studentId }) => {
           throw new Error("Invalid student ID format.");
         }
 
-        const response = await fetch(`/api/students/${encodeURIComponent(studentId)}/status`);
+        const response = await fetch(`/api/applications/student/${encodeURIComponent(studentId)}`);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }

@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Send a Notification
+// Send a General Notification
 const sendNotification = async (req, res) => {
   try {
     const { email, message, subject } = req.body;
@@ -37,7 +37,7 @@ const sendNotification = async (req, res) => {
 // Send Interview Invitation
 const sendInterviewNotification = async (req, res) => {
   try {
-    const { email, interviewDate, interviewTime, companyName, jobTitle, interviewLink } = req.body;
+    const { email, interviewDate, interviewTime, companyName, jobTitle, interviewLink, additionalMessage } = req.body;
 
     if (!email || !interviewDate || !interviewTime || !companyName || !jobTitle || !interviewLink) {
       return res.status(400).json({ success: false, message: "All fields are required for interview notification." });
@@ -51,6 +51,8 @@ const sendInterviewNotification = async (req, res) => {
       Date: ${interviewDate}
       Time: ${interviewTime}
       Join here: ${interviewLink}
+
+      ${additionalMessage ? `\nAdditional Message:\n${additionalMessage}\n` : ""}
 
       Please make sure to be on time.
 
@@ -116,8 +118,49 @@ const sendInterviewReminder = async (req, res) => {
   }
 };
 
+// Send Interview Confirmation
+const sendInterviewConfirmation = async (req, res) => {
+  try {
+    const { email, interviewDate, interviewTime, companyName, jobTitle, interviewLink } = req.body;
+
+    if (!email || !interviewDate || !interviewTime || !companyName || !jobTitle || !interviewLink) {
+      return res.status(400).json({ success: false, message: "All fields are required for interview confirmation." });
+    }
+
+    const confirmationMessage = `
+      Hello,
+
+      Thank you for confirming your attendance for the interview at ${companyName}.
+
+      Role: ${jobTitle}
+      Date: ${interviewDate}
+      Time: ${interviewTime}
+      Join here: ${interviewLink}
+
+      Best Regards,
+      Placement Team
+    `;
+
+    console.log(`Sending interview confirmation to ${email}`);
+
+    // Send Email
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: `Confirmation: Interview for ${companyName} | ${jobTitle}`,
+      text: confirmationMessage,
+    });
+
+    res.json({ success: true, message: "Interview confirmation sent successfully!" });
+  } catch (error) {
+    console.error("Error sending interview confirmation:", error);
+    res.status(500).json({ success: false, message: "Error sending interview confirmation", error: error.message });
+  }
+};
+
 module.exports = {
   sendNotification,
   sendInterviewNotification,
   sendInterviewReminder,
+  sendInterviewConfirmation
 };

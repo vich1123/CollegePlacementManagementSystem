@@ -1,25 +1,32 @@
 import axios from "axios";
 
-// Base URL Configuration
+// Base URL Configuration (Handles Dev & Production)
 const BASE_URL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:5001/api"
     : "https://collegeplacementmanagementsystem-1.onrender.com/api";
 
-// Debugging function
+// Debugging Function for API Calls
 const logRequest = (method, url, data = null) => {
   console.log(`API Request → Method: ${method}, URL: ${url}, Data:`, data);
 };
 
-// Helper function for API requests
+// Centralized API Request Helper Function
 const apiCall = async (method, endpoint, data = null, config = {}) => {
   const url = `${BASE_URL}${endpoint}`;
   logRequest(method, url, data);
 
   try {
-    const response = await axios({ method, url, data, ...config });
+    const response = await axios({
+      method,
+      url,
+      data,
+      withCredentials: true, // Ensures authentication & cookies handling
+      ...config,
+    });
+
     console.log(`API Response → ${method}: ${url}`, response.data);
-    return response.data;
+    return response.data ?? { success: false, message: "Invalid API response." };
   } catch (error) {
     console.error(`Error in ${method} request to ${url}:`, error.response?.data || error.message);
     return {
@@ -30,80 +37,92 @@ const apiCall = async (method, endpoint, data = null, config = {}) => {
   }
 };
 
-// Helper function to validate MongoDB Object ID
-const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
+// MongoDB Object ID Validation
+const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id?.trim() ?? "");
 
-// **Student API**
-export const getStudents = () => apiCall("GET", "/students");
-export const getStudentById = (id) => {
-  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid student ID format." });
-  return apiCall("GET", `/students/${id}`);
-};
-export const createStudent = (data) => apiCall("POST", "/students", data);
-export const updateStudent = (id, data) => {
-  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid ID." });
-  return apiCall("PUT", `/students/${id}`, data);
-};
-export const deleteStudent = (id) => {
-  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid ID." });
-  return apiCall("DELETE", `/students/${id}`);
-};
+// Students API
+export const getStudents = async () => apiCall("GET", "/students");
 
-// **Job API (Fixed)**
-export const getJobs = () => apiCall("GET", "/jobs");
-export const createJob = (data) => apiCall("POST", "/jobs", data);
-export const getJobById = (id) => {
-  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid job ID format." });
-  return apiCall("GET", `/jobs/${id}`);
-};
-export const deleteJob = (id) => {
-  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid job ID format." });
-  return apiCall("DELETE", `/jobs/${id}`);
+export const getStudentById = async (id) =>
+  isValidObjectId(id) ? apiCall("GET", `/students/${id.trim()}`) : { success: false, message: "Invalid ID format." };
+
+export const createStudent = async (data) => apiCall("POST", "/students", data);
+
+export const updateStudent = async (id, data) =>
+  isValidObjectId(id) ? apiCall("PUT", `/students/${id.trim()}`, data) : { success: false, message: "Invalid ID format." };
+
+export const deleteStudent = async (id) =>
+  isValidObjectId(id) ? apiCall("DELETE", `/students/${id.trim()}`) : { success: false, message: "Invalid ID format." };
+
+// Companies API
+export const getCompanies = async () => apiCall("GET", "/companies");
+
+export const createCompany = async (data) => {
+  if (!data.name || !data.contactEmail) {
+    return { success: false, message: "Company name and contact email are required." };
+  }
+  return apiCall("POST", "/companies", data);
 };
 
-// **Placement Drive API**
-export const getPlacements = () => apiCall("GET", "/placements");
-export const createPlacementDrive = (data) => apiCall("POST", "/placements", data);
+export const updateCompany = async (id, data) =>
+  isValidObjectId(id) ? apiCall("PUT", `/companies/${id.trim()}`, data) : { success: false, message: "Invalid ID format." };
 
-// **Recruitment Status API**
-export const fetchRecruitmentStatusHistory = () => apiCall("GET", "/recruitment-status/history");
-export const fetchLatestRecruitmentStatus = () => apiCall("GET", "/recruitment-status/latest");
-export const createRecruitmentStatus = (data) => apiCall("POST", "/recruitment-status", data);
-export const deleteRecruitmentStatusById = (id) => {
-  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid recruitment status ID format." });
-  return apiCall("DELETE", `/recruitment-status/${id}`);
-};
-export const deleteAllRecruitmentStatuses = () => apiCall("DELETE", "/recruitment-status");
+export const deleteCompany = async (id) =>
+  isValidObjectId(id) ? apiCall("DELETE", `/companies/${id.trim()}`) : { success: false, message: "Invalid ID format." };
 
-// **Reports API**
-export const fetchReports = () => apiCall("GET", "/reports");
+// Jobs API
+export const getJobs = async () => apiCall("GET", "/jobs");
 
-// **Companies API**
-export const getCompanies = () => apiCall("GET", "/companies");
-export const createCompany = (data) => apiCall("POST", "/companies", data);
-export const updateCompany = (id, data) => {
-  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid company ID." });
-  return apiCall("PUT", `/companies/${id}`, data);
-};
-export const deleteCompany = (id) => {
-  if (!isValidObjectId(id)) return Promise.resolve({ success: false, message: "Invalid company ID." });
-  return apiCall("DELETE", `/companies/${id}`);
+export const createJob = async (data) => {
+  if (!data.title || !data.companyId) {
+    return { success: false, message: "Job title and company ID are required." };
+  }
+  return apiCall("POST", "/jobs", data);
 };
 
-// **Company Applications API**
-export const getCompanyApplications = (companyId) => {
-  if (!isValidObjectId(companyId)) return Promise.resolve({ success: false, message: "Invalid company ID format." });
-  return apiCall("GET", `/companies/${companyId}/applications`);
+export const getJobById = async (id) =>
+  isValidObjectId(id) ? apiCall("GET", `/jobs/${id.trim()}`) : { success: false, message: "Invalid ID format." };
+
+export const deleteJob = async (id) =>
+  isValidObjectId(id) ? apiCall("DELETE", `/jobs/${id.trim()}`) : { success: false, message: "Invalid ID format." };
+
+// Placement Drive API
+export const getPlacements = async () => apiCall("GET", "/placements");
+
+export const createPlacementDrive = async (data) => apiCall("POST", "/placements", data);
+
+// Recruitment Status API
+export const fetchRecruitmentStatusHistory = async () => apiCall("GET", "/recruitment-status/history");
+
+export const fetchLatestRecruitmentStatus = async () => apiCall("GET", "/recruitment-status/latest");
+
+export const createRecruitmentStatus = async (data) => apiCall("POST", "/recruitment-status", data);
+
+export const deleteRecruitmentStatusById = async (id) =>
+  isValidObjectId(id) ? apiCall("DELETE", `/recruitment-status/${id.trim()}`) : { success: false, message: "Invalid ID format." };
+
+export const deleteAllRecruitmentStatuses = async () => apiCall("DELETE", "/recruitment-status");
+
+// Reports API
+export const getReports = async () => apiCall("GET", "/reports");
+
+// Company Applications API
+export const getCompanyApplications = async (companyId) =>
+  isValidObjectId(companyId) ? apiCall("GET", `/companies/${companyId.trim()}/applications`) : { success: false, message: "Invalid ID format." };
+
+// Application Review API - Fixed Route
+export const reviewApplication = async (companyId, applicationId, { status, feedback, communicationMessage }) => {
+  if (!isValidObjectId(companyId) || !isValidObjectId(applicationId)) {
+    return { success: false, message: "Invalid company or application ID format." };
+  }
+  return apiCall("PUT", `/companies/${companyId.trim()}/applications/${applicationId.trim()}/review`, {
+    status,
+    feedback,
+    communicationMessage,
+  });
 };
 
-// **Application Review API**
-export const reviewApplication = (applicationId, { status, feedback, communicationMessage }) => {
-  if (!isValidObjectId(applicationId)) return Promise.resolve({ success: false, message: "Invalid application ID format." });
-  return apiCall("PUT", `/applications/${applicationId}/review`, { status, feedback, communicationMessage });
-};
+// Academic Record API
+export const getAcademicRecordByStudent = async (studentId) =>
+  isValidObjectId(studentId) ? apiCall("GET", `/students/${studentId.trim()}/academic-record`) : { success: false, message: "Invalid ID format." };
 
-// **Academic Record API**
-export const getAcademicRecordByStudent = (studentId) => {
-  if (!isValidObjectId(studentId)) return Promise.resolve({ success: false, message: "Invalid student ID format." });
-  return apiCall("GET", `/students/${studentId}/academic-record`);
-};

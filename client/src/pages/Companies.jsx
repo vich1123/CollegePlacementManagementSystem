@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getCompanies } from "../api/companies";
+import { getCompanies, applyForJob } from "../services/companies";
 
 const Companies = () => {
   const [companies, setCompanies] = useState([]);
@@ -10,10 +10,20 @@ const Companies = () => {
 
   const fetchCompanies = async () => {
     try {
-      const response = await getCompanies();
-      setCompanies(response.data);
+      const data = await getCompanies();
+      setCompanies(data.data);
     } catch (error) {
       console.error("Error fetching companies:", error);
+    }
+  };
+
+  const handleApply = async (companyId, jobTitle) => {
+    try {
+      await applyForJob(companyId, jobTitle);
+      alert("Application submitted successfully!");
+    } catch (error) {
+      console.error("Error applying for job:", error);
+      alert("Error applying for job.");
     }
   };
 
@@ -24,10 +34,26 @@ const Companies = () => {
         {companies.map((company) => (
           <div key={company._id} className="bg-white shadow-md rounded p-4">
             <h3 className="text-xl font-semibold">{company.name}</h3>
-            <p className="text-gray-600">Jobs: {company.jobPostings.join(", ")}</p>
-            <button className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
-              Apply Now
-            </button>
+            <p className="text-gray-600">Location: {company.location}</p>
+            <p className="text-gray-600">Industry: {company.industry}</p>
+            <h4 className="mt-2 font-semibold">Job Openings:</h4>
+            {company.jobPostings.length > 0 ? (
+              <ul>
+                {company.jobPostings.map((job, index) => (
+                  <li key={index}>
+                    {job}
+                    <button
+                      onClick={() => handleApply(company._id, job)}
+                      className="ml-2 bg-blue-500 text-white px-4 py-1 rounded"
+                    >
+                      Apply Now
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No jobs available.</p>
+            )}
           </div>
         ))}
       </div>

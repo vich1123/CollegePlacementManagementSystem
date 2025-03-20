@@ -1,11 +1,22 @@
 const express = require("express");
 const router = express.Router();
-const { getReports, createReport } = require("../controllers/reportController");
+const {
+  getReports,
+  getReportByYear,
+  createReport,
+  updateReport,
+  deleteReport,
+  getPlacementTrends,
+} = require("../controllers/reportController");
 
-// Route to get all reports
+// ** Placement Trends API (Before `/:year` to prevent conflicts) **
+router.get("/trends", getPlacementTrends);
+
+// ** Report Management Routes **
 router.get("/", getReports);
-
-// Route to create a new report
+router.get("/:year", getReportByYear);
 router.post("/", createReport);
+router.put("/:id", updateReport);
+router.delete("/:id", deleteReport);
 
 module.exports = router;

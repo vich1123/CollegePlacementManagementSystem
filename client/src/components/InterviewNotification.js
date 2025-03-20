@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { sendInterviewNotification } from "../services/notificationService";
 
 const InterviewNotification = ({ email }) => {
   const [formData, setFormData] = useState({
@@ -16,20 +17,14 @@ const InterviewNotification = ({ email }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const sendNotification = () => {
-    fetch("/api/notifications/interview", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, ...formData }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setNotificationMessage(data.message);
-      })
-      .catch((err) => {
-        console.error(err);
-        setNotificationMessage("Error sending notification.");
-      });
+  const sendNotification = async () => {
+    try {
+      const response = await sendInterviewNotification(email, formData);
+      setNotificationMessage(response.message);
+    } catch (error) {
+      console.error("Error sending notification:", error);
+      setNotificationMessage("Failed to send notification.");
+    }
   };
 
   return (

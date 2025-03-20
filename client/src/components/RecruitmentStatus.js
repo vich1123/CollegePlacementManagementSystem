@@ -9,7 +9,11 @@ function RecruitmentStatus() {
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [formData, setFormData] = useState({ studentsPlaced: "", offersMade: "", companiesParticipated: "" });
+  const [formData, setFormData] = useState({
+    studentsPlaced: "",
+    offersMade: "",
+    companiesParticipated: "",
+  });
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -18,10 +22,13 @@ function RecruitmentStatus() {
 
   const loadRecruitmentStatus = async () => {
     setLoading(true);
+    setError("");
     try {
       const result = await fetchRecruitmentStatusHistory();
+
       if (result?.success && result.data.length > 0) {
         const labels = result.data.map((entry) => new Date(entry.createdAt).toLocaleDateString());
+
         setChartData({
           labels,
           datasets: [
@@ -50,10 +57,12 @@ function RecruitmentStatus() {
         });
       } else {
         setError("No recruitment data available.");
+        setChartData(null);
       }
     } catch (err) {
       console.error("Error fetching recruitment status:", err);
       setError("Error loading data.");
+      setChartData(null);
     } finally {
       setLoading(false);
     }
@@ -68,13 +77,23 @@ function RecruitmentStatus() {
     setMessage("");
     setError("");
 
-    if (!formData.studentsPlaced || !formData.offersMade || !formData.companiesParticipated) {
-      setError("All fields are required.");
+    const formattedData = {
+      studentsPlaced: Number(formData.studentsPlaced),
+      offersMade: Number(formData.offersMade),
+      companiesParticipated: Number(formData.companiesParticipated),
+    };
+
+    if (
+      formattedData.studentsPlaced <= 0 ||
+      formattedData.offersMade <= 0 ||
+      formattedData.companiesParticipated <= 0
+    ) {
+      setError("All fields are required and must be positive numbers.");
       return;
     }
 
     try {
-      await createRecruitmentStatus(formData);
+      await createRecruitmentStatus(formattedData);
       setMessage("Recruitment status added successfully!");
       setFormData({ studentsPlaced: "", offersMade: "", companiesParticipated: "" });
       loadRecruitmentStatus(); // Reload chart data
@@ -89,7 +108,6 @@ function RecruitmentStatus() {
       <div className="w-full max-w-2xl p-6 bg-white rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-center mb-6">Recruitment Status Trends</h2>
 
-        {/* Form to add new status */}
         <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-200 rounded-lg">
           <h3 className="text-lg font-semibold mb-4">Add New Recruitment Status</h3>
           <input
@@ -127,10 +145,9 @@ function RecruitmentStatus() {
         {message && <p className="text-center text-green-500">{message}</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
 
-        {/* Chart */}
         {loading ? <p className="text-center text-gray-700">Loading...</p> : null}
         {!loading && chartData && (
-          <div style={{ height: "400px" }}> {/* Fixed height for layout stability */}
+          <div style={{ height: "400px" }}>
             <Line data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />
           </div>
         )}

@@ -19,7 +19,7 @@ const StudentSchema = new mongoose.Schema({
   skills: [{ type: String }],
   placementStatus: { type: String, enum: ["not placed", "placed"], default: "not placed" },
   reviews: [{ type: String }], // Added review functionality
-  dateAdded: { type: Date, default: Date.now }
+  dateAdded: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model("Student", StudentSchema);

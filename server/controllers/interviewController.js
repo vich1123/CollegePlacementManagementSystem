@@ -4,13 +4,6 @@ const Company = require("../models/Company");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
-// Check if Twilio credentials are available before initializing
-let twilioClient = null;
-if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
-  const twilio = require("twilio");
-  twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-}
-
 // Email Transporter Setup
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -23,26 +16,31 @@ const transporter = nodemailer.createTransport({
 // Schedule an interview with notifications
 const scheduleInterview = async (req, res) => {
   try {
-    const { student, company, date, time, mode, interviewLink } = req.body;
+    const { studentId, companyId, date, time, meetingLink } = req.body;
+
+    // Ensure required fields are present
+    if (!studentId || !companyId || !date || !time || !meetingLink) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
     // Find student and company details
-    const studentData = await Student.findById(student);
-    const companyData = await Company.findById(company);
+    const student = await Student.findById(studentId);
+    const company = await Company.findById(companyId);
 
-    if (!studentData || !companyData) {
+    if (!student || !company) {
       return res.status(404).json({ message: "Student or company not found" });
     }
 
     // Create interview entry
-    const newInterview = new Interview({ student, company, date, time, mode, interviewLink });
+    const newInterview = new Interview({ studentId, companyId, date, time, meetingLink, status: "Scheduled" });
     await newInterview.save();
 
     // Send Email Notification
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: studentData.email,
+      to: student.email,
       subject: "Interview Scheduled",
-      text: `Dear ${studentData.name},\n\nYour interview with ${companyData.name} has been scheduled.\n\nDetails:\n- Date: ${date}\n- Time: ${time}\n- Mode: ${mode}\n- Join Link: ${interviewLink}\n\nBest Regards,\nPlacement Team`,
+      text: `Dear ${student.name},\n\nYour interview with ${company.name} has been scheduled.\n\nDetails:\n- Date: ${date}\n- Time: ${time}\n- Join Link: ${meetingLink}\n\nBest Regards,\nPlacement Team`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -50,22 +48,10 @@ const scheduleInterview = async (req, res) => {
       else console.log("Email sent:", info.response);
     });
 
-    // Send SMS Notification (Twilio, if configured)
-    if (twilioClient) {
-      twilioClient.messages
-        .create({
-          body: `Interview Scheduled: ${companyData.name}, ${date} at ${time} (${mode}). Link: ${interviewLink}`,
-          from: process.env.TWILIO_PHONE_NUMBER,
-          to: studentData.phone,
-        })
-        .then((message) => console.log("SMS sent:", message.sid))
-        .catch((error) => console.log("Error sending SMS:", error));
-    }
-
-    res.status(201).json({ message: "Interview scheduled and notifications sent!" });
+    res.status(201).json({ message: "Interview scheduled successfully!", data: newInterview });
   } catch (error) {
     console.error("Error scheduling interview:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -82,7 +68,7 @@ const sendInterviewReminder = async (req, res) => {
       from: process.env.EMAIL_USER,
       to: interview.student.email,
       subject: "Reminder: Upcoming Interview",
-      text: `Dear ${interview.student.name},\n\nThis is a reminder for your upcoming interview.\n\nDetails:\n- Company: ${interview.company.name}\n- Date: ${interview.date}\n- Time: ${interview.time}\n- Mode: ${interview.mode}\n- Join Link: ${interview.interviewLink}\n\nBest of luck!\nPlacement Team`,
+      text: `Dear ${interview.student.name},\n\nThis is a reminder for your upcoming interview.\n\nDetails:\n- Company: ${interview.company.name}\n- Date: ${interview.date}\n- Time: ${interview.time}\n- Join Link: ${interview.meetingLink}\n\nBest of luck!\nPlacement Team`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -90,22 +76,10 @@ const sendInterviewReminder = async (req, res) => {
       else console.log("Reminder email sent:", info.response);
     });
 
-    // SMS Notification (Twilio, if configured)
-    if (twilioClient) {
-      twilioClient.messages
-        .create({
-          body: `Reminder: Interview with ${interview.company.name} on ${interview.date} at ${interview.time}. Link: ${interview.interviewLink}`,
-          from: process.env.TWILIO_PHONE_NUMBER,
-          to: interview.student.phone,
-        })
-        .then((message) => console.log("SMS reminder sent:", message.sid))
-        .catch((error) => console.log("Error sending SMS:", error));
-    }
-
     res.status(200).json({ message: "Interview reminder sent successfully!" });
   } catch (error) {
     console.error("Error sending reminder:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -121,9 +95,9 @@ const submitFeedback = async (req, res) => {
     interview.feedback = feedback;
     await interview.save();
 
-    res.status(200).json({ success: true, message: "Feedback submitted successfully", data: interview });
+    res.status(200).json({ message: "Feedback submitted successfully", data: interview });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -137,7 +111,7 @@ const getFeedback = async (req, res) => {
 
     res.status(200).json({ success: true, feedback: interview.feedback });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 

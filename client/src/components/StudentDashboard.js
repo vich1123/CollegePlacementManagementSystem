@@ -2,6 +2,9 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getStudentById } from "../services/api";
 
+// Helper function to validate MongoDB Object ID
+const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
+
 const StudentDashboard = () => {
   const { studentId } = useParams();
   const [student, setStudent] = useState(null);
@@ -12,15 +15,13 @@ const StudentDashboard = () => {
 
   useEffect(() => {
     if (!studentId) {
-      console.error("No studentId provided.");
       setError("Student ID is missing.");
       setLoading(false);
       return;
     }
 
     const formattedId = studentId.trim();
-    if (formattedId.length !== 24 || !/^[0-9a-fA-F]{24}$/.test(formattedId)) {
-      console.error("Invalid student ID format:", formattedId);
+    if (!isValidObjectId(formattedId)) {
       setError("Invalid student ID format.");
       setLoading(false);
       return;
@@ -32,12 +33,11 @@ const StudentDashboard = () => {
         if (!response || response.success === false || !response.data) {
           setError(response?.message || "Student not found.");
         } else {
-          setStudent(response.data);
+          setStudent(response.data.student);
           setApplications(response.data.applications || []);
           setInterviews(response.data.interviews || []);
         }
       } catch (err) {
-        console.error("Error fetching student data:", err);
         setError("Error fetching student data.");
       } finally {
         setLoading(false);

@@ -7,7 +7,7 @@ exports.getRecruitmentStatusHistory = async (req, res) => {
     const statuses = await RecruitmentStatus.find().sort({ createdAt: 1 });
 
     if (!statuses.length) {
-      return res.status(404).json({ success: false, message: "No recruitment status history found" });
+      return res.status(200).json({ success: true, message: "No recruitment status history found", data: [] });
     }
 
     res.status(200).json({ success: true, data: statuses });
@@ -22,11 +22,7 @@ exports.getLatestRecruitmentStatus = async (req, res) => {
   try {
     const status = await RecruitmentStatus.findOne().sort({ createdAt: -1 });
 
-    if (!status) {
-      return res.status(404).json({ success: false, message: "No latest recruitment status found" });
-    }
-
-    res.status(200).json({ success: true, data: status });
+    res.status(200).json({ success: true, data: status || {} });
   } catch (error) {
     console.error("Error fetching latest recruitment status:", error);
     res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
@@ -38,11 +34,7 @@ exports.createRecruitmentStatus = async (req, res) => {
   try {
     const { studentsPlaced, offersMade, companiesParticipated } = req.body;
 
-    if (
-      studentsPlaced === undefined ||
-      offersMade === undefined ||
-      companiesParticipated === undefined
-    ) {
+    if (studentsPlaced === undefined || offersMade === undefined || companiesParticipated === undefined) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
@@ -74,13 +66,10 @@ exports.createRecruitmentStatus = async (req, res) => {
 exports.deleteAllRecruitmentStatuses = async (req, res) => {
   try {
     const result = await RecruitmentStatus.deleteMany({});
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ success: false, message: "No recruitment statuses found to delete" });
-    }
-
+    
     res.status(200).json({
       success: true,
-      message: "All recruitment statuses deleted successfully",
+      message: `Deleted ${result.deletedCount} recruitment statuses successfully.`,
     });
   } catch (error) {
     console.error("Error deleting recruitment statuses:", error);

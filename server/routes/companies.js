@@ -4,30 +4,26 @@ const {
   getCompanyById,
   getCompanyApplications,
   reviewApplication,
-  exportCompanies,
   addCompany,
-  deleteCompany,
+  updateCompany,
+  deleteCompany
 } = require("../controllers/companyController");
 
 const router = express.Router();
 
-// Get all companies
-router.get("/", getCompanies);
+// ** Middleware for Debugging API Requests **
+router.use((req, res, next) => {
+  console.log(`Company API Request: ${req.method} ${req.originalUrl}`);
+  next();
+});
 
-// Get a single company by ID
-router.get("/:id", getCompanyById);
-
-// Get all applications for a company
-router.get("/:companyId/applications", getCompanyApplications);
-
-// Review an application
-router.put("/applications/:applicationId/review", reviewApplication);
-
-router.get("/export", exportCompanies);
-
-router.post("/", addCompany);
-
-// Delete a company
-router.delete("/:id", deleteCompany);
+// ** Define API Routes **
+router.get("/", getCompanies);  // Fetch all companies
+router.get("/:id", getCompanyById);  // Fetch a company by ID
+router.get("/:companyId/applications", getCompanyApplications);  // Fetch applications for a company
+router.put("/:companyId/applications/:applicationId/review", reviewApplication);  // Review an application
+router.post("/", addCompany);  // Add a new company
+router.put("/:id", updateCompany);  // Update company details
+router.delete("/:id", deleteCompany);  // Delete a company
 
 module.exports = router;

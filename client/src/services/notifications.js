@@ -1,8 +1,18 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = '/api/notifications';
+const API_URL = "/api/notifications";
 
-export const sendNotification = async (email, message) => {
-  const response = await axios.post(`${API_URL}/send`, { email, message });
-  return response.data;
+// Send interview notification
+export const sendInterviewNotification = async (email, interviewDetails) => {
+  try {
+    const response = await axios.post(`${API_URL}/interview`, {
+      email,
+      ...interviewDetails,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error sending interview notification:", error);
+    throw error;
+  }
 };

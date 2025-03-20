@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import { getStudentById } from "../services/api";
+import { getAcademicRecordByStudent, updateAcademicRecord } from "../services/academicRecords";
 
 const StudentProfile = () => {
   const { studentId } = useParams();
@@ -8,16 +9,18 @@ const StudentProfile = () => {
   const [academicRecord, setAcademicRecord] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [newAchievement, setNewAchievement] = useState("");
+  const [newGrade, setNewGrade] = useState({ subject: "", score: "" });
 
   useEffect(() => {
     const fetchStudentData = async () => {
       try {
-        const response = await axios.get(`/api/students/${studentId}`);
-        setStudent(response.data.data.student);
+        const studentData = await getStudentById(studentId);
+        setStudent(studentData.data);
 
         // Fetch academic records
-        const academicResponse = await axios.get(`/api/academicRecords/${studentId}`);
-        setAcademicRecord(academicResponse.data.data);
+        const academicData = await getAcademicRecordByStudent(studentId);
+        setAcademicRecord(academicData);
       } catch (error) {
         console.error("Error fetching student profile", error);
         setError("Failed to fetch student details.");
@@ -28,6 +31,32 @@ const StudentProfile = () => {
 
     fetchStudentData();
   }, [studentId]);
+
+  const handleAddAchievement = async () => {
+    if (!newAchievement) return;
+    try {
+      const updatedRecord = await updateAcademicRecord(studentId, {
+        achievements: [...academicRecord.achievements, newAchievement],
+      });
+      setAcademicRecord(updatedRecord);
+      setNewAchievement("");
+    } catch (error) {
+      console.error("Error adding achievement", error);
+    }
+  };
+
+  const handleAddGrade = async () => {
+    if (!newGrade.subject || !newGrade.score) return;
+    try {
+      const updatedRecord = await updateAcademicRecord(studentId, {
+        grades: [...academicRecord.grades, newGrade],
+      });
+      setAcademicRecord(updatedRecord);
+      setNewGrade({ subject: "", score: "" });
+    } catch (error) {
+      console.error("Error adding grade", error);
+    }
+  };
 
   return (
     <div className="p-6">
@@ -61,6 +90,27 @@ const StudentProfile = () => {
                   <p>No grades available.</p>
                 )}
 
+                {/* Add Grade Input */}
+                <div className="mt-2">
+                  <input
+                    type="text"
+                    placeholder="Subject"
+                    value={newGrade.subject}
+                    onChange={(e) => setNewGrade({ ...newGrade, subject: e.target.value })}
+                    className="border p-2 rounded"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Score"
+                    value={newGrade.score}
+                    onChange={(e) => setNewGrade({ ...newGrade, score: e.target.value })}
+                    className="border p-2 rounded ml-2"
+                  />
+                  <button onClick={handleAddGrade} className="ml-2 bg-blue-600 text-white px-4 py-2 rounded">
+                    Add Grade
+                  </button>
+                </div>
+
                 {/* Display Achievements */}
                 <h4 className="text-lg font-semibold mt-2">Achievements</h4>
                 {academicRecord.achievements.length > 0 ? (
@@ -73,21 +123,19 @@ const StudentProfile = () => {
                   <p>No achievements available.</p>
                 )}
 
-                {/* Display Transcripts */}
-                <h4 className="text-lg font-semibold mt-2">Transcripts</h4>
-                {academicRecord.transcripts.length > 0 ? (
-                  <ul className="list-disc pl-4">
-                    {academicRecord.transcripts.map((url, index) => (
-                      <li key={index}>
-                        <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500">
-                          Transcript {index + 1}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>No transcripts available.</p>
-                )}
+                {/* Add Achievement Input */}
+                <div className="mt-2">
+                  <input
+                    type="text"
+                    placeholder="New Achievement"
+                    value={newAchievement}
+                    onChange={(e) => setNewAchievement(e.target.value)}
+                    className="border p-2 rounded"
+                  />
+                  <button onClick={handleAddAchievement} className="ml-2 bg-green-600 text-white px-4 py-2 rounded">
+                    Add Achievement
+                  </button>
+                </div>
               </div>
             ) : (
               <p>No academic records found.</p>
