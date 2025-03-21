@@ -1,5 +1,5 @@
 const Company = require("../models/Company");
-const Application = require("../models/Application"); // Fixed Import Case Sensitivity
+const Application = require("../models/Application");
 const mongoose = require("mongoose");
 
 // ** Validate MongoDB ObjectId **
